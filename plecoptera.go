@@ -2,6 +2,7 @@ package plecoptera
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
@@ -40,9 +41,9 @@ type Report struct {
 	Values ParameterValues
 }
 
-func Optimize(logger logr.Logger, settings *Settings, cfg interface{}) (*Report, error) {
-	if err := validateSettings(settings, cfg); err != nil {
-		return nil, errors.Wrap(err, "validate config")
+func Optimize(logger logr.Logger, settings *Settings) (*Report, error) {
+	if err := validateSettings(settings); err != nil {
+		return nil, errors.Wrap(err, "validate settings")
 	}
 
 	estimator := newCostEstimator(settings)
@@ -53,4 +54,41 @@ func Optimize(logger logr.Logger, settings *Settings, cfg interface{}) (*Report,
 	// TODO: call python here
 
 	return nil, nil
+}
+
+const namePattern = "[a-zA-Z0-9_]"
+
+func validateSettings(settings *Settings) error {
+	if len(settings.Parameters) == 0 {
+		return errors.New("Parameters are empty")
+	}
+
+	if settings.CostFunction == nil {
+		return errors.New("CostFunction is empty")
+	}
+
+	for _, param := range settings.Parameters {
+		if err := validateParameterDescription(param); err != nil {
+			return errors.Wrapf(err, "validate parameter '%s'", param.Name)
+		}
+	}
+
+	return nil
+}
+
+func validateParameterDescription(param *ParameterDescription) error {
+	matched, err := regexp.MatchString(namePattern, param.Name)
+	if err != nil {
+		return errors.Wrap(err, "regexp match string")
+	}
+
+	if !matched {
+		return errors.Errorf("name '%s' does not match pattern '%s'", param.Name, namePattern)
+	}
+
+	if param.ConfigModifier == nil {
+		return errors.New("ConfigModifier is empty")
+	}
+
+	return nil
 }
