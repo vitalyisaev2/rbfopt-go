@@ -1,46 +1,56 @@
 package plecoptera
 
 import (
+	"context"
+
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
-	"gonum.org/v1/gonum/optimize"
 )
 
-// TODO: check this function as it was copied from gonum
-type functionThresholdConverger struct {
-	threshold float64
+type ConfigModifier func(int)
+
+type Bound struct {
+	From int
+	To   int
 }
 
-func (functionThresholdConverger) Init(dim int) {}
-
-func (f functionThresholdConverger) Converged(loc *optimize.Location) optimize.Status {
-	if loc.F < f.threshold {
-		return optimize.FunctionThreshold
-	}
-	return optimize.NotTerminated
+// ParameterDescription is something you want to optimize in your service configuration
+type ParameterDescription struct {
+	Name           string         `json:"name"` // Brief name of your parameter
+	ConfigModifier ConfigModifier `json:"-"`
+	Bound          *Bound         `json:"bound"` // Some reasonable bounds for the parameters
 }
 
-type Params struct {
-	Dimensions   uint
-	CostFunction func(args []float64) float64
+type Cost = float64
+
+// CostFunction is implemented by clients. Optimization algorithm will try to optimize
+// your parameters on the basis of this function. CostFunction call is expected to be expensive,
+// so client should check context expiration.
+type CostFunction func(ctx context.Context, cfg interface{}) (Cost, error)
+
+// Settings contains optimization techniques
+type Settings struct {
+	Parameters   []*ParameterDescription
+	CostFunction CostFunction
 }
 
-func FindOptimum(params *Params) ([]float64, error) {
-	method := &optimize.CmaEsChol{}
+type ParameterValues map[string]int
 
-	initX := make([]float64, params.Dimensions)
+type Report struct {
+	Values ParameterValues
+}
 
-	settings := &optimize.Settings{
-		Converger: &functionThresholdConverger{threshold: 0.1},
+func Optimize(logger logr.Logger, settings *Settings, cfg interface{}) (*Report, error) {
+	if err := validateSettings(settings, cfg); err != nil {
+		return nil, errors.Wrap(err, "validate config")
 	}
 
-	problem := optimize.Problem{
-		Func: params.CostFunction,
-	}
+	estimator := newCostEstimator(settings)
 
-	result, err := optimize.Minimize(problem, initX, settings, method)
-	if err != nil {
-		return nil, errors.Wrap(err, "minimize")
-	}
+	srv := newServer(logger, estimator)
+	defer srv.quit()
 
-	return result.Location.X, nil
+	// TODO: call python here
+
+	return nil, nil
 }
