@@ -22,6 +22,25 @@ type ParameterDescription struct {
 	Bound          *Bound         `json:"bound"` // Some reasonable bounds for the parameters
 }
 
+const namePattern = "[a-zA-Z0-9_]"
+
+func (pd *ParameterDescription) validate() error {
+	matched, err := regexp.MatchString(namePattern, pd.Name)
+	if err != nil {
+		return errors.Wrap(err, "regexp match string")
+	}
+
+	if !matched {
+		return errors.Errorf("name '%s' does not match pattern '%s'", pd.Name, namePattern)
+	}
+
+	if pd.ConfigModifier == nil {
+		return errors.New("ConfigModifier is empty")
+	}
+
+	return nil
+}
+
 type Cost = float64
 
 // CostFunction is implemented by clients. Optimization algorithm will try to optimize
@@ -35,6 +54,24 @@ type Settings struct {
 	CostFunction CostFunction
 }
 
+func (s *Settings) validate() error {
+	if len(s.Parameters) == 0 {
+		return errors.New("Parameters are empty")
+	}
+
+	if s.CostFunction == nil {
+		return errors.New("CostFunction is empty")
+	}
+
+	for _, param := range s.Parameters {
+		if err := validateParameterDescription(param); err != nil {
+			return errors.Wrapf(err, "validate parameter '%s'", param.Name)
+		}
+	}
+
+	return nil
+}
+
 type ParameterValues map[string]int
 
 type Report struct {
@@ -42,7 +79,7 @@ type Report struct {
 }
 
 func Optimize(logger logr.Logger, settings *Settings) (*Report, error) {
-	if err := validateSettings(settings); err != nil {
+	if err := settings.validate(); err != nil {
 		return nil, errors.Wrap(err, "validate settings")
 	}
 
@@ -54,41 +91,4 @@ func Optimize(logger logr.Logger, settings *Settings) (*Report, error) {
 	// TODO: call python here
 
 	return nil, nil
-}
-
-const namePattern = "[a-zA-Z0-9_]"
-
-func validateSettings(settings *Settings) error {
-	if len(settings.Parameters) == 0 {
-		return errors.New("Parameters are empty")
-	}
-
-	if settings.CostFunction == nil {
-		return errors.New("CostFunction is empty")
-	}
-
-	for _, param := range settings.Parameters {
-		if err := validateParameterDescription(param); err != nil {
-			return errors.Wrapf(err, "validate parameter '%s'", param.Name)
-		}
-	}
-
-	return nil
-}
-
-func validateParameterDescription(param *ParameterDescription) error {
-	matched, err := regexp.MatchString(namePattern, param.Name)
-	if err != nil {
-		return errors.Wrap(err, "regexp match string")
-	}
-
-	if !matched {
-		return errors.Errorf("name '%s' does not match pattern '%s'", param.Name, namePattern)
-	}
-
-	if param.ConfigModifier == nil {
-		return errors.New("ConfigModifier is empty")
-	}
-
-	return nil
 }
