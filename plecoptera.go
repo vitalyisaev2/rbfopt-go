@@ -64,7 +64,7 @@ func (s *Settings) validate() error {
 	}
 
 	for _, param := range s.Parameters {
-		if err := validateParameterDescription(param); err != nil {
+		if err := param.validate(); err != nil {
 			return errors.Wrapf(err, "validate parameter '%s'", param.Name)
 		}
 	}
