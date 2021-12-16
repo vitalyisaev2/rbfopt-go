@@ -35,7 +35,7 @@ func (s *server) estimateCostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	statusCode, err := s.estimateCost(w, r)
+	statusCode, err := s.estimateCost(logger, w, r)
 	w.WriteHeader(statusCode)
 	if err != nil {
 		logger.Error(err, "request handling finished")
@@ -44,7 +44,7 @@ func (s *server) estimateCostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *server) estimateCost(w http.ResponseWriter, r *http.Request) (int, error) {
+func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http.Request) (int, error) {
 	if r.Method != http.MethodGet {
 		return http.StatusMethodNotAllowed, errors.New("invalid method")
 	}
@@ -56,7 +56,8 @@ func (s *server) estimateCost(w http.ResponseWriter, r *http.Request) (int, erro
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
 	}
 
-	cost, err := s.estimator.estimateCost(request.ParameterValues)
+	ctx := logr.NewContext(r.Context(), logger)
+	cost, err := s.estimator.estimateCost(ctx, request.ParameterValues)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
 	}
