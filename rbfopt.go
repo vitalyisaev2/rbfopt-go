@@ -17,30 +17,32 @@ type rbfOptSettings struct {
 	Parameters []*ParameterDescription `json:"parameters"`
 }
 
-type rbfOpt struct {
-	rootDir string
+type rbfOptWrapper struct {
+	rootDir  string
+	settings *Settings
+	ctx      context.Context
 }
 
-const rbfOptWrapper = "plecoptera.py"
+const rbfOptExecutable = "plecoptera.py"
 
-func (r *rbfOpt) run(ctx context.Context, settings *Settings) error {
+func (r *rbfOptWrapper) run() error {
 	path := filepath.Join(r.rootDir, "config.json")
 
-	if err := r.dumpConfig(settings, path); err != nil {
+	if err := r.dumpConfig(path); err != nil {
 		return errors.Wrap(err, "dump config")
 	}
 
-	cmd := exec.Command(rbfOptWrapper, path)
-	if err := r.executeCommand(ctx, cmd); err != nil {
+	cmd := exec.Command(rbfOptExecutable, path)
+	if err := r.executeCommand(r.ctx, cmd); err != nil {
 		return errors.Wrap(err, "execute command")
 	}
 
 	return nil
 }
 
-func (r *rbfOpt) dumpConfig(settings *Settings, path string) error {
+func (r *rbfOptWrapper) dumpConfig(path string) error {
 	cfg := &rbfOptSettings{
-		Parameters: settings.Parameters,
+		Parameters: r.settings.Parameters,
 	}
 
 	data, err := json.Marshal(cfg)
@@ -55,13 +57,13 @@ func (r *rbfOpt) dumpConfig(settings *Settings, path string) error {
 	return nil
 }
 
-func (r *rbfOpt) executeCommand(ctx context.Context, cmd *exec.Cmd) error {
+func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error {
 	logger, err := logr.FromContext(ctx)
 	if err != nil {
 		return errors.Wrap(err, "from context")
 	}
 
-	logger.Info("executing command", "cmd", cmd)
+	logger.V(1).Info("executing command", "cmd", cmd)
 
 	stdoutReader, err := cmd.StdoutPipe()
 	if err != nil {
@@ -103,6 +105,20 @@ func (r *rbfOpt) executeCommand(ctx context.Context, cmd *exec.Cmd) error {
 
 	if err := cmd.Wait(); err != nil {
 		return errors.Wrap(err, "cmd wait")
+	}
+
+	return nil
+}
+
+func runRbfOpt(ctx context.Context, settings *Settings, rootDir string) error {
+	wrapper := &rbfOptWrapper{
+		ctx:      ctx,
+		settings: settings,
+		rootDir:  rootDir,
+	}
+
+	if err := wrapper.run(); err != nil {
+		return errors.Wrap(err, "run RbfOpt wrapper")
 	}
 
 	return nil

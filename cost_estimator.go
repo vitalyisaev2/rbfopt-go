@@ -10,15 +10,15 @@ type costEstimator struct {
 	settings *Settings
 }
 
-func (ce *costEstimator) estimateCost(ctx context.Context, parameterValues ParameterValues) (Cost, error) {
-	// apply all values first
-	for parameterName, parameterValue := range parameterValues {
-		parameterDesc, err := ce.settings.getParameterByName(parameterName)
+func (ce *costEstimator) estimateCost(ctx context.Context, parameterValues []*ParameterValue) (Cost, error) {
+	// apply all values to config first
+	for _, pv := range parameterValues {
+		parameterDesc, err := ce.settings.getParameterByName(pv.Name)
 		if err != nil {
-			return 0, errors.Wrapf(err, "get parameter by name: %s", parameterName)
+			return 0, errors.Wrapf(err, "get parameter by name: %s", pv.Name)
 		}
 
-		parameterDesc.ConfigModifier(parameterValue)
+		parameterDesc.ConfigModifier(pv.Value)
 	}
 
 	// then run cost estimation

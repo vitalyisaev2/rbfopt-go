@@ -1,6 +1,11 @@
 package plecoptera
 
 import (
+	"context"
+	"fmt"
+	"path/filepath"
+	"time"
+
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 )
@@ -14,17 +19,36 @@ type Report struct {
 	Optimum []*ParameterValue
 }
 
-func Optimize(logger logr.Logger, settings *Settings) (*Report, error) {
+func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	// check settings
 	if err := settings.validate(); err != nil {
 		return nil, errors.Wrap(err, "validate settings")
 	}
 
+	// run HTTP server that will redirect requests from Python optimizer to your Go service
 	estimator := newCostEstimator(settings)
-
 	srv := newServer(logger, estimator)
 	defer srv.quit()
 
-	// TODO: call python here
+	// FIXME: take root dir from settings
+	rootDir := filepath.Join(
+		"/tmp",
+		fmt.Sprintf("plecoptera_%v", time.Now().Format("20060102_150405")),
+	)
 
-	return nil, nil
+	// run Python optimizer
+	ctx = logr.NewContext(ctx, logger)
+	if err := runRbfOpt(ctx, settings, rootDir); err != nil {
+		return nil, errors.Wrapf(err, "run python part")
+	}
+
+	// get request from service
+	report := srv.report
+	if report == nil {
+		return nil, errors.New("protocol error: report is nil")
+	}
+
+	return report, nil
 }
