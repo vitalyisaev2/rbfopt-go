@@ -25,7 +25,7 @@ type rbfOptWrapper struct {
 	ctx      context.Context
 }
 
-const rbfOptExecutable = "plecoptera.py"
+const rbfOptExecutable = "/home/isaev/go/src/github.com/vitalyisaev2/plecoptera/plecoptera.py"
 
 func (r *rbfOptWrapper) run() error {
 	path := filepath.Join(r.rootDir, "config.json")

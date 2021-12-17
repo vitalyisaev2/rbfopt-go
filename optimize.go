@@ -3,6 +3,7 @@ package plecoptera
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -30,15 +31,19 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	// run HTTP server that will redirect requests from Python optimizer to your Go service
 	estimator := newCostEstimator(settings)
 
-	endpoint := ":8080"
+	endpoint := "0.0.0.0:8080"
 	srv := newServer(logger, endpoint, estimator)
 	defer srv.quit()
 
+	// create temporary dir for configs and artifacts
 	// FIXME: take root dir from settings
 	rootDir := filepath.Join(
 		"/tmp",
 		fmt.Sprintf("plecoptera_%v", time.Now().Format("20060102_150405")),
 	)
+	if err := os.MkdirAll(rootDir, 0755); err != nil {
+		return nil, errors.Wrap(err, "mkdir all")
+	}
 
 	// run Python optimizer
 	ctx = logr.NewContext(ctx, logger)
