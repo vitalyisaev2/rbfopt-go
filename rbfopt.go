@@ -15,10 +15,12 @@ import (
 
 type rbfOptSettings struct {
 	Parameters []*ParameterDescription `json:"parameters"`
+	Endpoint   string                  `json:"endpoint"`
 }
 
 type rbfOptWrapper struct {
 	rootDir  string
+	endpoint string
 	settings *Settings
 	ctx      context.Context
 }
@@ -43,6 +45,7 @@ func (r *rbfOptWrapper) run() error {
 func (r *rbfOptWrapper) dumpConfig(path string) error {
 	cfg := &rbfOptSettings{
 		Parameters: r.settings.Parameters,
+		Endpoint:   r.endpoint,
 	}
 
 	data, err := json.Marshal(cfg)
@@ -110,11 +113,12 @@ func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error
 	return nil
 }
 
-func runRbfOpt(ctx context.Context, settings *Settings, rootDir string) error {
+func runRbfOpt(ctx context.Context, settings *Settings, rootDir, endpoint string) error {
 	wrapper := &rbfOptWrapper{
 		ctx:      ctx,
 		settings: settings,
 		rootDir:  rootDir,
+		endpoint: endpoint,
 	}
 
 	if err := wrapper.run(); err != nil {

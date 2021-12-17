@@ -9,7 +9,8 @@ import (
 type ConfigModifier func(int)
 
 type Bound struct {
-	From, To int
+	From int `json:"from"`
+	To   int `json:"to"`
 }
 
 // ParameterDescription is something you want to optimize in your service configuration

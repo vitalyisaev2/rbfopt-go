@@ -1,0 +1,10 @@
+certifi==2021.10.8
+charset-normalizer==2.0.9
+idna==3.3
+numpy==1.21.4
+ply==3.11
+Pyomo==6.1.2
+rbfopt==4.2.2
+requests==2.26.0
+scipy==1.7.3
+urllib3==1.26.7

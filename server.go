@@ -131,13 +131,16 @@ func (s *server) quit() {
 	}
 }
 
-func newServer(logger logr.Logger, estimator *costEstimator) *server {
+func newServer(logger logr.Logger, endpoint string, estimator *costEstimator) *server {
 	handler := http.NewServeMux()
 
 	srv := &server{
-		httpServer: &http.Server{Handler: handler},
-		estimator:  estimator,
-		logger:     logger,
+		httpServer: &http.Server{
+			Addr:    endpoint,
+			Handler: handler,
+		},
+		estimator: estimator,
+		logger:    logger,
 	}
 
 	handler.HandleFunc("/estimate_cost", srv.estimateCostHandler)

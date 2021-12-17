@@ -29,7 +29,9 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 
 	// run HTTP server that will redirect requests from Python optimizer to your Go service
 	estimator := newCostEstimator(settings)
-	srv := newServer(logger, estimator)
+
+	endpoint := ":8080"
+	srv := newServer(logger, endpoint, estimator)
 	defer srv.quit()
 
 	// FIXME: take root dir from settings
@@ -40,7 +42,7 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 
 	// run Python optimizer
 	ctx = logr.NewContext(ctx, logger)
-	if err := runRbfOpt(ctx, settings, rootDir); err != nil {
+	if err := runRbfOpt(ctx, settings, rootDir, endpoint); err != nil {
 		return nil, errors.Wrapf(err, "run python part")
 	}
 
