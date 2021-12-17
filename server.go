@@ -10,7 +10,7 @@ import (
 )
 
 type estimateCostRequest struct {
-	ParameterValues ParameterValues `json:"parameter_values"`
+	ParameterValues []*ParameterValue `json:"parameter_values"`
 }
 
 type estimateCostResponse struct {
