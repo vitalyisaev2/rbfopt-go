@@ -17,7 +17,11 @@ type ParameterValue struct {
 }
 
 type Report struct {
-	Optimum []*ParameterValue
+	Cost            Cost              `json:"cost"`
+	Optimum         []*ParameterValue `json:"optimum"`
+	Iterations      int               `json:"iterations"`
+	Evaluations     int               `json:"evaluations"`
+	FastEvaluations int               `json:"fast_evaluations"`
 }
 
 func Optimize(ctx context.Context, settings *Settings) (*Report, error) {

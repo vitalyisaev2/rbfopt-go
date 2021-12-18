@@ -65,6 +65,7 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 
 // Register report
 
+// registerReportRequest contains the output of RBFOpt
 type registerReportRequest struct {
 	Report *Report `json:"report"`
 }
@@ -73,10 +74,14 @@ type registerReportResponse struct {
 }
 
 func (s *server) registerReportHandler(w http.ResponseWriter, r *http.Request) {
-	s.middleware(w, r, s.estimateCost)
+	s.middleware(w, r, s.registerReport)
 }
 
-func (s *server) registerReport(logger logr.Logger, w http.ResponseWriter, r *http.Request) (int, error) {
+func (s *server) registerReport(
+	logger logr.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+) (int, error) {
 	if r.Method != http.MethodPost {
 		return http.StatusMethodNotAllowed, errors.New("invalid method")
 	}
@@ -89,6 +94,7 @@ func (s *server) registerReport(logger logr.Logger, w http.ResponseWriter, r *ht
 	}
 
 	// simply cache the report
+	logger.V(1).Info("report received", "report", request.Report)
 	s.report = request.Report
 
 	// response is empty, but for the sake of symmetry, fill it anyway
@@ -99,14 +105,6 @@ func (s *server) registerReport(logger logr.Logger, w http.ResponseWriter, r *ht
 	}
 
 	return http.StatusOK, nil
-}
-
-func (s *server) annotateLogger(r *http.Request) logr.Logger {
-	return s.logger.WithValues(
-		"url", r.URL,
-		"method", r.Method,
-		"remote_addr", r.RemoteAddr,
-	)
 }
 
 type handlerFunc func(logger logr.Logger, w http.ResponseWriter, r *http.Request) (int, error)
@@ -129,6 +127,14 @@ func (s *server) middleware(w http.ResponseWriter, r *http.Request, handler hand
 	} else {
 		logger.V(0).Info("request handling finished")
 	}
+}
+
+func (s *server) annotateLogger(r *http.Request) logr.Logger {
+	return s.logger.WithValues(
+		"url", r.URL,
+		"method", r.Method,
+		"remote_addr", r.RemoteAddr,
+	)
 }
 
 func (s *server) quit() {

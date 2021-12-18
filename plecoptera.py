@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import json
-import logging
+import jsons
 import rbfopt
 import numpy as np
 import requests
@@ -11,6 +11,49 @@ from dataclasses import dataclass
 from typing import List
 from http import HTTPStatus
 
+
+@dataclass
+class Settings:
+    dimensions: int
+    var_names: List[str]
+    var_lower: np.array
+    var_upper: np.array
+    var_types: np.chararray
+    endpoint: str
+
+    @classmethod
+    def from_config(cls, config_path: str) -> 'Settings':
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+
+        parameters = config['parameters']
+        dimensions = len(parameters)
+
+        var_names = []
+        var_lower = np.zeros(shape=(dimensions,))
+        var_upper = np.zeros(shape=(dimensions,))
+        var_types = np.chararray(shape=(dimensions,))
+        for i, param in enumerate(parameters):
+            var_names.append(param['name'])
+            var_lower[i] = param['bound']['from']
+            var_upper[i] = param['bound']['to']
+            var_types[i] = 'I'
+
+        print("dimensions", dimensions)
+        print("var_lower", var_lower)
+        print("var_upper", var_upper)
+        print("var_types", var_types)
+
+        return cls(
+            dimensions=dimensions,
+            var_names=var_names,
+            var_lower=var_lower,
+            var_upper=var_upper,
+            var_types=var_types,
+            endpoint=config['endpoint'],
+        )
+
+
 Cost = float
 
 
@@ -18,6 +61,15 @@ Cost = float
 class ParameterValue:
     name: str
     value: int
+
+
+@dataclass
+class Report:
+    cost: Cost
+    optimum: List[ParameterValue]
+    iterations: int
+    evaluations: int
+    fast_evaluations: int
 
 
 class Client():
@@ -31,12 +83,12 @@ class Client():
     def estimate_cost(self, parameter_values: List[ParameterValue]) -> Cost:
         print(f"request '{parameter_values}'")
 
-        # TODO: how to handle custom serialization in a beautiful way?
-        payload = dict(parameter_values=[])
-        for pv in parameter_values:
-            payload['parameter_values'].append(pv.__dict__)
+        payload = dict(parameter_values=parameter_values)
+        response = self.session.get(
+            urljoin(self.url_head, 'estimate_cost'),
+            json=jsons.dump(payload),
+        )
 
-        response = self.session.get(urljoin(self.url_head, 'estimate_cost'), json=payload)
         print(f"response code={response.status_code} cost={response.json()}")
 
         if response.status_code != HTTPStatus.OK:
@@ -44,20 +96,22 @@ class Client():
         else:
             return response.json()["cost"]
 
-    def register_report(self, optimum: List[ParameterValue]):
-        print(f"request '{optimum}'")
+    def register_report(self, report: Report):
+        print(f"request '{report}'")
 
-        response = self.session.get(
+        payload = dict(report=report)
+        response = self.session.post(
             urljoin(self.url_head, 'register_report'),
-            json={'optimum': optimum},
+            json=jsons.dump(payload),
         )
-        print(f"response code={response.status_code} cost={response.json()}")
+
+        print(f"response code={response.status_code} cost={response}")
 
         if response.status_code != HTTPStatus.OK:
-            raise f'invalid status code {response.status_code}'
+            raise ValueError(f'invalid status code {response.status_code}')
 
 
-class Estimator:
+class Evaluator:
     client: Client
     parameter_names: List[str]
 
@@ -65,52 +119,55 @@ class Estimator:
         self.client = client
         self.parameter_names = parameter_names
 
-    def cost_function(self, raw_values: np.ndarray) -> Cost:
+    def __np_array_to_parameter_values(self, raw_values: np.ndarray) -> List[ParameterValue]:
         parameter_values = []
         for i, raw_value in enumerate(raw_values):
             parameter_values.append(
                 ParameterValue(name=self.parameter_names[i], value=int(raw_value)),
             )
+        return parameter_values
 
+    def estimate_cost(self, raw_values: np.ndarray) -> Cost:
+        parameter_values = self.__np_array_to_parameter_values(raw_values)
         return self.client.estimate_cost(parameter_values)
+
+    def register_report(
+            self,
+            cost: Cost,
+            optimum: np.ndarray,
+            iterations: int,
+            evaluations: int,
+            fast_evaluations: int,
+    ):
+        report = Report(
+            cost=cost,
+            optimum=self.__np_array_to_parameter_values(optimum),
+            iterations=iterations,
+            evaluations=evaluations,
+            fast_evaluations=fast_evaluations,
+        )
+        self.client.register_report(report)
 
 
 def main():
-    config_path = sys.argv[1]
-    with open(config_path, 'r') as f:
-        config = json.load(f)
+    # prepare infrastructure
+    settings = Settings.from_config(sys.argv[1])
 
-    print(config)
-
-    parameters = config['parameters']
-    dimensions = len(parameters)
-
-    var_names = []
-    var_lower = np.zeros(shape=(dimensions,))
-    var_upper = np.zeros(shape=(dimensions,))
-    var_types = np.chararray(shape=(dimensions,))
-    for i, param in enumerate(parameters):
-        var_names.append(param['name'])
-        var_lower[i] = param['bound']['from']
-        var_upper[i] = param['bound']['to']
-        var_types[i] = 'I'
-
-    client = Client(config['endpoint'])
-    estimator = Estimator(client, var_names)
-
-    print("dimensions", dimensions)
-    print("var_lower", var_lower)
-    print("var_upper", var_upper)
-    print("var_types", var_types)
+    client = Client(settings.endpoint)
+    evaluator = Evaluator(client, settings.var_names)
 
     bb = rbfopt.RbfoptUserBlackBox(
-        dimensions, var_lower, var_upper, var_types, estimator.cost_function)
+        settings.dimensions,
+        settings.var_lower,
+        settings.var_upper,
+        settings.var_types,
+        evaluator.estimate_cost,
+    )
 
+    # perform optimization and post report to server
     settings = rbfopt.RbfoptSettings(max_evaluations=10)
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
-    val, x, itercount, evalcount, fast_evalcount = alg.optimize()
-
-    print(val, x, itercount, evalcount, fast_evalcount)
+    evaluator.register_report(*alg.optimize())
 
 
 if __name__ == "__main__":
