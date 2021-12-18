@@ -23,42 +23,38 @@ class ParameterValue:
 class Client():
     url_head: str
     session: requests.Session
-    logger: logging.Logger
 
-    def __init__(self, logger: logging.Logger, endpoint: str):
+    def __init__(self, endpoint: str):
         self.url_head = f'http://{endpoint}'
         self.session = requests.Session()
-        self.logger = logger
 
     def estimate_cost(self, parameter_values: List[ParameterValue]) -> Cost:
-        self.logger.info("estimate_cost request" % parameter_values)
+        print(f"request '{parameter_values}'")
 
-        # TODO: how to handle custom serialization in a beautiful way
+        # TODO: how to handle custom serialization in a beautiful way?
         payload = dict(parameter_values=[])
         for pv in parameter_values:
             payload['parameter_values'].append(pv.__dict__)
 
         response = self.session.get(urljoin(self.url_head, 'estimate_cost'), json=payload)
+        print(f"response code={response.status_code} cost={response.json()}")
 
         if response.status_code != HTTPStatus.OK:
-            self.logger.error("estimate_cost response %s" % response.status_code)
             raise ValueError(f'invalid status code {response.status_code}')
         else:
-            self.logger.info("estimate_cost response", response.json())
+            return response.json()["cost"]
 
     def register_report(self, optimum: List[ParameterValue]):
-        self.logger.info("register_report request", optimum)
+        print(f"request '{optimum}'")
 
         response = self.session.get(
             urljoin(self.url_head, 'register_report'),
             json={'optimum': optimum},
         )
+        print(f"response code={response.status_code} cost={response.json()}")
 
         if response.status_code != HTTPStatus.OK:
-            self.logger.error("register_report response", response.status_code)
             raise f'invalid status code {response.status_code}'
-        else:
-            self.logger.info("register_report response", response.json())
 
 
 class Estimator:
@@ -73,7 +69,7 @@ class Estimator:
         parameter_values = []
         for i, raw_value in enumerate(raw_values):
             parameter_values.append(
-                ParameterValue(name=self.parameter_names[0], value=raw_value),
+                ParameterValue(name=self.parameter_names[i], value=int(raw_value)),
             )
 
         return self.client.estimate_cost(parameter_values)
@@ -99,9 +95,13 @@ def main():
         var_upper[i] = param['bound']['to']
         var_types[i] = 'I'
 
-    logger = logging.getLogger('plecoptera')
-    client = Client(logger, config['endpoint'])
+    client = Client(config['endpoint'])
     estimator = Estimator(client, var_names)
+
+    print("dimensions", dimensions)
+    print("var_lower", var_lower)
+    print("var_upper", var_upper)
+    print("var_types", var_types)
 
     bb = rbfopt.RbfoptUserBlackBox(
         dimensions, var_lower, var_upper, var_types, estimator.cost_function)

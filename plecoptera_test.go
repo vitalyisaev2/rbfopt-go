@@ -33,8 +33,8 @@ func (cfg *serviceConfig) setParamX(value int) { cfg.paramX = value }
 func (cfg *serviceConfig) setParamY(value int) { cfg.paramY = value }
 
 func (cfg *serviceConfig) costFunction(_ context.Context) (plecoptera.Cost, error) {
-	// simple quadratic function
-	return plecoptera.Cost(cfg.paramX * cfg.paramY), nil
+	// simple quadratic function with easily discovered minimum
+	return plecoptera.Cost(-1 * cfg.paramX * cfg.paramY), nil
 }
 
 func TestPlecoptera(t *testing.T) {

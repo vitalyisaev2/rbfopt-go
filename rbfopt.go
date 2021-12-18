@@ -2,12 +2,12 @@ package plecoptera
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
-	"sync"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
@@ -63,51 +63,41 @@ func (r *rbfOptWrapper) dumpConfig(path string) error {
 func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error {
 	logger, err := logr.FromContext(ctx)
 	if err != nil {
-		return errors.Wrap(err, "from context")
+		return errors.Wrap(err, "logr from context")
 	}
 
-	logger.V(1).Info("executing command", "cmd", cmd)
+	logger.Info("executing command", "cmd", cmd)
 
-	stdoutReader, err := cmd.StdoutPipe()
-	if err != nil {
-		return errors.Wrap(err, "cmd stdout reader")
-	}
+	var (
+		stdoutBuf = &bytes.Buffer{}
+		stderrBuf = &bytes.Buffer{}
+	)
 
-	stderrReader, err := cmd.StderrPipe()
-	if err != nil {
-		return errors.Wrap(err, "cmd stderr reader")
-	}
+	cmd.Stdout = stdoutBuf
+	cmd.Stderr = stderrBuf
 
-	stdoutScanner := bufio.NewScanner(stdoutReader)
-	stderrScanner := bufio.NewScanner(stderrReader)
+	err = cmd.Run()
 
-	wg := &sync.WaitGroup{}
-	wg.Add(2)
+	// print
 
-	go func() {
-		defer wg.Done()
-
-		for stdoutScanner.Scan() {
-			logger.V(1).Info(stdoutScanner.Text())
+	if stdoutBuf.Len() > 0 {
+		logger.V(1).Info("subprocess stdout")
+		scanner := bufio.NewScanner(stdoutBuf)
+		for scanner.Scan() {
+			logger.V(1).Info(scanner.Text())
 		}
-	}()
-
-	go func() {
-		defer wg.Done()
-
-		for stderrScanner.Scan() {
-			logger.V(1).Info(stderrScanner.Text())
-		}
-	}()
-
-	if err := cmd.Start(); err != nil {
-		return errors.Wrap(err, "cmd Start")
 	}
 
-	wg.Wait()
+	if stderrBuf.Len() > 0 {
+		logger.V(1).Info("subprocess stderr")
+		scanner := bufio.NewScanner(stderrBuf)
+		for scanner.Scan() {
+			logger.V(1).Info(scanner.Text())
+		}
+	}
 
-	if err := cmd.Wait(); err != nil {
-		return errors.Wrap(err, "cmd wait")
+	if err != nil {
+		return errors.Wrap(err, "cmd run")
 	}
 
 	return nil

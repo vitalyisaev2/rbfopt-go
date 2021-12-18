@@ -48,6 +48,12 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 		return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
 	}
 
+	logger.V(1).Info(
+		"estimate cost",
+		"parameter_values", request.ParameterValues,
+		"cost", cost,
+	)
+
 	response := &estimateCostResponse{Cost: cost}
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
