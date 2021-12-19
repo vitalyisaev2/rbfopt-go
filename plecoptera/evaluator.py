@@ -12,7 +12,7 @@ from plecoptera.report import Report
 class Evaluator:
     client: Client
     parameter_names: List[str]
-    evaluations: pd.Dataframe
+    evaluations: pd.DataFrame
 
     def __init__(self, client: Client, parameter_names: List[str]):
         self.client = client
