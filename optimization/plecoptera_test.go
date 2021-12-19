@@ -26,15 +26,17 @@ func newLogger() logr.Logger {
 type serviceConfig struct {
 	paramX int
 	paramY int
+	paramZ int
 }
 
 func (cfg *serviceConfig) setParamX(value int) { cfg.paramX = value }
 func (cfg *serviceConfig) setParamY(value int) { cfg.paramY = value }
+func (cfg *serviceConfig) setParamZ(value int) { cfg.paramZ = value }
 
 func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, error) {
-	// simple function with minimum that can be easily discovered:
+	// using quite a simple function with minimum that can be easily discovered:
 	// it matches the upper bound of every variable
-	return optimization.Cost(-1 * cfg.paramX * cfg.paramY), nil
+	return optimization.Cost(-1 * (cfg.paramX * cfg.paramY + cfg.paramZ)), nil
 }
 
 func TestPlecoptera(t *testing.T) {
@@ -52,9 +54,14 @@ func TestPlecoptera(t *testing.T) {
 				Bound:          &optimization.Bound{From: 0, To: 10},
 				ConfigModifier: cfg.setParamY,
 			},
+			{
+				Name:           "z",
+				Bound:          &optimization.Bound{From: 0, To: 10},
+				ConfigModifier: cfg.setParamZ,
+			},
 		},
 		CostFunction:   cfg.costFunction,
-		MaxEvaluations: 15,
+		MaxEvaluations: 25,
 	}
 
 	logger := newLogger()
@@ -67,6 +74,7 @@ func TestPlecoptera(t *testing.T) {
 	expectedOptimumCfg := &serviceConfig{
 		paramX: settings.Parameters[0].Bound.To,
 		paramY: settings.Parameters[1].Bound.To,
+		paramZ: settings.Parameters[2].Bound.To,
 	}
 
 	expectedOptimumCost, err := expectedOptimumCfg.costFunction(context.Background())
