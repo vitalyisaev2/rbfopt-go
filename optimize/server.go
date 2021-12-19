@@ -1,4 +1,4 @@
-package plecoptera
+package optimize
 
 import (
 	"context"

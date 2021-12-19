@@ -1,4 +1,4 @@
-package plecoptera_test
+package optimize_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/stretchr/testify/require"
-	"github.com/vitalyisaev2/plecoptera"
+	"github.com/vitalyisaev2/plecoptera/optimize"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -31,25 +31,25 @@ type serviceConfig struct {
 func (cfg *serviceConfig) setParamX(value int) { cfg.paramX = value }
 func (cfg *serviceConfig) setParamY(value int) { cfg.paramY = value }
 
-func (cfg *serviceConfig) costFunction(_ context.Context) (plecoptera.Cost, error) {
+func (cfg *serviceConfig) costFunction(_ context.Context) (optimize.Cost, error) {
 	// simple function with minimum that can be easily discovered:
 	// it matches the upper bound of every variable
-	return plecoptera.Cost(-1 * cfg.paramX * cfg.paramY), nil
+	return optimize.Cost(-1 * cfg.paramX * cfg.paramY), nil
 }
 
 func TestPlecoptera(t *testing.T) {
 	cfg := &serviceConfig{}
 
-	settings := &plecoptera.Settings{
-		Parameters: []*plecoptera.ParameterDescription{
+	settings := &optimize.Settings{
+		Parameters: []*optimize.ParameterDescription{
 			{
 				Name:           "x",
-				Bound:          &plecoptera.Bound{From: 0, To: 10},
+				Bound:          &optimize.Bound{From: 0, To: 10},
 				ConfigModifier: cfg.setParamX,
 			},
 			{
 				Name:           "y",
-				Bound:          &plecoptera.Bound{From: 0, To: 10},
+				Bound:          &optimize.Bound{From: 0, To: 10},
 				ConfigModifier: cfg.setParamY,
 			},
 		},
@@ -59,7 +59,7 @@ func TestPlecoptera(t *testing.T) {
 	logger := newLogger()
 	ctx := logr.NewContext(context.Background(), logger)
 
-	report, err := plecoptera.Optimize(ctx, settings)
+	report, err := optimize.Optimize(ctx, settings)
 	require.NoError(t, err)
 	require.NotNil(t, report)
 
