@@ -1,4 +1,4 @@
-package optimize
+package optimization
 
 import (
 	"regexp"
@@ -13,7 +13,7 @@ type Bound struct {
 	To   int `json:"to"`
 }
 
-// ParameterDescription is something you want to optimize in your service configuration
+// ParameterDescription is something you want to optimization in your service configuration
 type ParameterDescription struct {
 	Name           string         `json:"name"`  // Brief name of your parameter
 	Bound          *Bound         `json:"bound"` // Some reasonable bounds for the parameters

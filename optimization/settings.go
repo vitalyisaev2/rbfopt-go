@@ -1,4 +1,4 @@
-package optimize
+package optimization
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 type Cost = float64
 
-// CostFunction is implemented by clients. Optimization algorithm will try to optimize
+// CostFunction is implemented by clients. Optimization algorithm will try to optimization
 // your parameters on the basis of this function. CostFunction call is expected to be expensive,
 // so client should check context expiration.
 type CostFunction func(ctx context.Context) (Cost, error)
