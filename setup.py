@@ -14,12 +14,19 @@ setup(name='plecoptera',
       install_requires=INSTALL_REQUIRES,
       license_file="LICENSE",
       package_dir={
-            '': '.'
+          '': '.'
       },
+      classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Mathematics",
+      ],
       entry_points={
-            'console_scripts': [
-                  'plecoptera = plecoptera.main:main',
-            ]
+          'console_scripts': [
+              'plecoptera = plecoptera.main:main',
+          ]
       },
       zip_safe=False,
- )
+      python_requires=">=3.7",
+      )
