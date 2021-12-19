@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.axes
 import numpy as np
+from scipy.interpolate import griddata
 import pandas as pd
 
 
@@ -18,29 +19,37 @@ class Renderer():
                                  figsize=figsize)
 
         for i in range(len(column_names)):
-            for j in range(i+1, len(column_names)):
+            for j in range(i + 1, len(column_names)):
                 col_name_1, col_name_2 = column_names[i], column_names[j]
                 ax = axes[i, j]
-                self.__render_single(col_name_1, col_name_2, ax)
+                self.__render_single(ax, col_name_1, col_name_2)
 
         fig.savefig('/tmp/foo.png')
 
-    def __render_single(self, col_name_1: str, col_name_2: str, ax: matplotlib.axes.Axes):
+    def __render_single(self, ax: matplotlib.axes.Axes, col_name_1: str, col_name_2: str):
         selected = self.__df[[col_name_1, col_name_2, "cost"]]
-        averaged = selected.groupby([col_name_1, col_name_2])['cost'].\
-            agg(lambda x: x.unique().sum() / x.nunique()).\
+        # print("SELECTED", selected)
+        averaged = selected.groupby([col_name_1, col_name_2])['cost']. \
+            agg(lambda x: x.unique().sum() / x.nunique()). \
             reset_index()
+        # print("AVERAGED", averaged)
+
+        x_min, x_max = averaged[col_name_1].min(), averaged[col_name_1].max()
+        y_min, y_max = averaged[col_name_2].min(), averaged[col_name_2].max()
+
+        grid_x, grid_y = np.mgrid[x_min:x_max, y_min:y_max]
+        grid = griddata(
+            averaged[[col_name_1, col_name_2]],
+            averaged["cost"],
+            (grid_x, grid_y),
+            method='linear',
+        )
 
         # TODO: estimate these limits only once
         cost_min, cost_max = self.__df["cost"].min(), self.__df["cost"].max()
 
-        out = averaged[[col_name_1, col_name_2, "cost"]]
-        print(out)
+        c = ax.imshow(grid, cmap='jet', origin='lower', vmin=cost_min, vmax=cost_max)
 
-        c = ax.pcolormesh(out, cmap='cool', vmin=cost_min, vmax=cost_max)
-        x = averaged[col_name_1]
-        y = averaged[col_name_2]
-        ax.axis([x.min(), x.max(), y.min(), y.max()])
         ax.set_xlabel(col_name_1)
         ax.set_ylabel(col_name_2)
 
