@@ -12,6 +12,7 @@ setup(name='plecoptera',
       url='https://github.com/vitalyisaev2/plecoptera',
       packages=find_packages(),
       install_requires=INSTALL_REQUIRES,
+      license_file="LICENSE",
       package_dir={
             '': '.'
       },
