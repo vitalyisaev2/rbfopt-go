@@ -24,7 +24,7 @@ class Renderer():
                 ax = axes[i, j]
                 self.__render_single(ax, col_name_1, col_name_2)
 
-        fig.savefig('/tmp/foo.png')
+        fig.savefig('plot.png')
 
     def __render_single(self, ax: matplotlib.axes.Axes, col_name_1: str, col_name_2: str):
         selected = self.__df[[col_name_1, col_name_2, "cost"]]
