@@ -15,8 +15,9 @@ type CostFunction func(ctx context.Context) (Cost, error)
 
 // Settings contains optimization techniques
 type Settings struct {
-	Parameters   []*ParameterDescription
-	CostFunction CostFunction
+	Parameters     []*ParameterDescription
+	CostFunction   CostFunction
+	MaxEvaluations uint
 }
 
 func (s *Settings) validate() error {
@@ -32,6 +33,10 @@ func (s *Settings) validate() error {
 		if err := param.validate(); err != nil {
 			return errors.Wrapf(err, "validate parameter '%s'", param.Name)
 		}
+	}
+
+	if s.MaxEvaluations == 0 {
+		return errors.New("MaxEvaluations is empty")
 	}
 
 	return nil

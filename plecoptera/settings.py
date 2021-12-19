@@ -13,6 +13,7 @@ class Settings:
     var_upper: np.array
     var_types: np.chararray
     endpoint: str
+    max_evaluations: int
 
     @classmethod
     def from_config(cls, config_path: str) -> 'Settings':
@@ -44,4 +45,5 @@ class Settings:
             var_upper=var_upper,
             var_types=var_types,
             endpoint=config['endpoint'],
+            max_evaluations=config['max_evaluations']
         )

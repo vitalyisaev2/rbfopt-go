@@ -53,7 +53,8 @@ func TestPlecoptera(t *testing.T) {
 				ConfigModifier: cfg.setParamY,
 			},
 		},
-		CostFunction: cfg.costFunction,
+		CostFunction:   cfg.costFunction,
+		MaxEvaluations: 15,
 	}
 
 	logger := newLogger()

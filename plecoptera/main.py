@@ -22,7 +22,7 @@ def main():
     )
 
     # perform optimization and post report to server
-    settings = rbfopt.RbfoptSettings(max_evaluations=50)
+    settings = rbfopt.RbfoptSettings(max_evaluations=settings.max_evaluations)
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
     evaluator.register_report(*alg.optimize())
 

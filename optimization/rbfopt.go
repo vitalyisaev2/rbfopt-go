@@ -14,8 +14,9 @@ import (
 )
 
 type rbfOptSettings struct {
-	Parameters []*ParameterDescription `json:"parameters"`
-	Endpoint   string                  `json:"endpoint"`
+	Parameters     []*ParameterDescription `json:"parameters"`
+	MaxEvaluations uint                    `json:"max_evaluations"`
+	Endpoint       string                  `json:"endpoint"`
 }
 
 type rbfOptWrapper struct {
@@ -44,8 +45,9 @@ func (r *rbfOptWrapper) run() error {
 
 func (r *rbfOptWrapper) dumpConfig(path string) error {
 	cfg := &rbfOptSettings{
-		Parameters: r.settings.Parameters,
-		Endpoint:   r.endpoint,
+		Parameters:     r.settings.Parameters,
+		MaxEvaluations: r.settings.MaxEvaluations,
+		Endpoint:       r.endpoint,
 	}
 
 	data, err := json.Marshal(cfg)
