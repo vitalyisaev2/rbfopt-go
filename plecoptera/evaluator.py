@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import pandas as pd
 
 from plecoptera.aliases import Cost
 from plecoptera.client import Client
@@ -11,6 +12,7 @@ from plecoptera.report import Report
 class Evaluator:
     client: Client
     parameter_names: List[str]
+    evaluations: pd.Dataframe
 
     def __init__(self, client: Client, parameter_names: List[str]):
         self.client = client

@@ -4,12 +4,15 @@ import pathlib
 HERE = pathlib.Path(__file__).parent
 
 setup(name='plecoptera',
-      version='0.1.0',
+      version_config={
+          "dev_template": "{tag}",
+      },
       description='Find better configuration of your Go service with global optimization algorithms',
       author='Vitaly Isaev',
       author_email='vitalyisaev2@gmail.com',
       url='https://github.com/vitalyisaev2/plecoptera',
       packages=find_packages(),
+      setup_requires=["setuptools-git-versioning"],
       install_requires=(
           "jsons==1.6.0",
           "numpy==1.21.4",
