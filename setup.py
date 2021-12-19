@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 import pathlib
 
 HERE = pathlib.Path(__file__).parent
-INSTALL_REQUIRES = (HERE / "requirements.txt").read_text().splitlines()
 
 setup(name='plecoptera',
       version='0.1.0',
@@ -11,16 +10,23 @@ setup(name='plecoptera',
       author_email='vitalyisaev2@gmail.com',
       url='https://github.com/vitalyisaev2/plecoptera',
       packages=find_packages(),
-      install_requires=INSTALL_REQUIRES,
+      install_requires=(
+          "jsons==1.6.0",
+          "numpy==1.21.4",
+          "Pyomo==6.1.2",
+          "rbfopt==4.2.2",
+          "requests==2.26.0",
+          "urllib3==1.26.7",
+      ),
       license_file="LICENSE",
       package_dir={
           '': '.'
       },
       classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering :: Mathematics",
+          "Programming Language :: Python :: 3",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent",
+          "Topic :: Scientific/Engineering :: Mathematics",
       ],
       entry_points={
           'console_scripts': [
