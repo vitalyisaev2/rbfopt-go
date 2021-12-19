@@ -20,7 +20,9 @@ setup(name='plecoptera',
           "rbfopt==4.2.2",
           "requests==2.26.0",
           "urllib3==1.26.7",
-          "pandas",
+          "pandas==1.3.5",
+          "matplotlib==3.5.1",
+          "scipy==1.7.3"
       ),
       license_file="LICENSE",
       package_dir={
