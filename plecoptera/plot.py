@@ -32,7 +32,8 @@ class Renderer():
             else:
                 n_rows = int(len(column_names) / n_columns) + 1
 
-        figsize = (4 * n_rows, 4 * n_columns)
+        # this multiplier is purely empirical...
+        figsize = (6 * n_rows, 6 * n_columns)
 
         fig, axes = plt.subplots(nrows=n_rows, ncols=n_columns, figsize=figsize,
                                  squeeze=False, constrained_layout=True)
@@ -52,13 +53,13 @@ class Renderer():
         y = self.__df['cost']
         slope, intercept, r, p, stderr = scipy.stats.linregress(x, y)
 
-        line = f'Regression: y={intercept:.2f}+{slope:.2f}x, r={r:.2f}'
+        line = f'Regression: cost={intercept:.2f}+{slope:.2f}{col_name}, r={r:.2f}'
 
         ax.plot(x, y, linewidth=0, marker='o', label='Data points', color='blue')
         ax.plot(x, intercept + slope * x, label=line)
         ax.set_xlabel(col_name)
         ax.set_ylabel('Cost')
-        ax.legend(facecolor='white')
+        ax.legend(facecolor='white', loc='upper center')
 
     def pairwise_heatmap_matrix(self):
         column_names = [column for column in self.__df.columns if column != 'cost']
