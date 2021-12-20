@@ -29,13 +29,13 @@ type rbfOptWrapper struct {
 const rbfOptExecutable = "plecoptera"
 
 func (r *rbfOptWrapper) run() error {
-	path := filepath.Join(r.rootDir, "config.json")
+	path := filepath.Join(r.rootDir, "settings.json")
 
 	if err := r.dumpConfig(path); err != nil {
 		return errors.Wrap(err, "dump config")
 	}
 
-	cmd := exec.Command(rbfOptExecutable, path)
+	cmd := exec.Command(rbfOptExecutable, r.rootDir)
 	if err := r.executeCommand(r.ctx, cmd); err != nil {
 		return errors.Wrap(err, "execute command")
 	}

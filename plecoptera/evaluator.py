@@ -1,5 +1,8 @@
+import json
+import pathlib
 from typing import List
 
+import jsons
 import numpy as np
 import pandas as pd
 
@@ -13,11 +16,13 @@ class Evaluator:
     __client: Client
     __parameter_names: List[str]
     __evaluations: []
+    __root_dir: pathlib.Path
 
-    def __init__(self, client: Client, parameter_names: List[str]):
+    def __init__(self, client: Client, parameter_names: List[str], root_dir: pathlib.Path):
         self.__client = client
         self.__parameter_names = parameter_names
         self.__evaluations = []
+        self.__root_dir = root_dir
 
     def __np_array_to_parameter_values(self, raw_values: np.ndarray) -> List[ParameterValue]:
         parameter_values = []
@@ -39,10 +44,6 @@ class Evaluator:
 
         return cost
 
-    @property
-    def evaluations(self) -> pd.DataFrame:
-        return pd.DataFrame(self.__evaluations)
-
     def register_report(
             self,
             cost: Cost,
@@ -58,4 +59,17 @@ class Evaluator:
             evaluations=evaluations,
             fast_evaluations=fast_evaluations,
         )
+
         self.__client.register_report(report)
+
+        # save report for future usage
+        file_path = self.__root_dir.joinpath("report.json")
+        with open(file_path, "w") as f:
+            obj = jsons.dump(report)
+            json.dump(obj, f)
+
+    def dump_evaluations(self) -> pd.DataFrame:
+        df = pd.DataFrame(self.__evaluations)
+        file_path = self.__root_dir.joinpath("evaluations.csv")
+        df.to_csv(file_path, header=True)
+        return df

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pathlib
 import sys
 
 import pandas as pd
@@ -11,10 +12,12 @@ from plecoptera.plot import Renderer
 
 def main():
     # prepare infrastructure
-    settings = Settings.from_config(sys.argv[1])
+    root_dir = pathlib.Path(sys.argv[1])
+    print(type(root_dir), root_dir)
+    settings = Settings.from_file(root_dir)
 
     client = Client(settings.endpoint)
-    evaluator = Evaluator(client, settings.var_names)
+    evaluator = Evaluator(client, settings.var_names, root_dir)
 
     bb = rbfopt.RbfoptUserBlackBox(
         settings.dimensions,
@@ -30,21 +33,11 @@ def main():
 
     # post report to server
     evaluator.register_report(*alg.optimize())
+    evaluations = evaluator.dump_evaluations()
 
     # render plots
-    renderer = Renderer(evaluator.evaluations)
+    renderer = Renderer(evaluations, root_dir)
     renderer.matrix()
-
-    # df = evaluator.evaluations
-    # print(df)
-    # selected = df[["x", "y", "cost"]]
-    # print(selected)
-    # print(">>>>", selected.groupby(['x', 'y'])['cost'])
-    # unique = selected.groupby(['x', 'y'])['cost'].agg(lambda x: x.unique().sum() / x.nunique()).reset_index()
-    # print(unique)
-    # unique_df = pd.DataFrame(unique)
-    # print(unique_df)
-    # print(unique_df.pivot("x", "y", "cost"))
 
 
 if __name__ == "__main__":

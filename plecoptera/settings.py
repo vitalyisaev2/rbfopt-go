@@ -1,4 +1,5 @@
 import json
+import pathlib
 from dataclasses import dataclass
 from typing import List
 
@@ -16,11 +17,13 @@ class Settings:
     max_evaluations: int
 
     @classmethod
-    def from_config(cls, config_path: str) -> 'Settings':
-        with open(config_path, 'r') as f:
-            config = json.load(f)
+    def from_file(cls, root_dir: pathlib.Path) -> 'Settings':
+        settings_path = root_dir.joinpath("settings.json")
 
-        parameters = config['parameters']
+        with open(settings_path, 'r') as f:
+            ss = json.load(f)
+
+        parameters = ss['parameters']
         dimensions = len(parameters)
 
         var_names = []
@@ -44,6 +47,6 @@ class Settings:
             var_lower=var_lower,
             var_upper=var_upper,
             var_types=var_types,
-            endpoint=config['endpoint'],
-            max_evaluations=config['max_evaluations']
+            endpoint=ss['endpoint'],
+            max_evaluations=ss['max_evaluations']
         )
