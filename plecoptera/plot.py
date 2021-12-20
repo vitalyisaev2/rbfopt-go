@@ -25,10 +25,15 @@ class Renderer():
                                  ncols=len(column_names)-1,
                                  figsize=figsize)
 
-        for i in range(len(column_names)):
+        for i in range(len(column_names)-1):
+            for j in range(0, i):
+                print("<<<", j, i)
+                axes[j, i].axis('off')
+                pass
             for j in range(i + 1, len(column_names)):
                 col_name_1, col_name_2 = column_names[i], column_names[j]
                 ax = axes[j-1, i]
+                print(">>>", col_name_1, col_name_2, j-1, i)
                 self.__render_single(ax, col_name_1, col_name_2)
 
         figure_path = self.__root_dir.joinpath("matrix.png")
@@ -43,7 +48,10 @@ class Renderer():
         x_min, x_max = averaged[col_name_1].min(), averaged[col_name_1].max()
         y_min, y_max = averaged[col_name_2].min(), averaged[col_name_2].max()
 
-        grid_x, grid_y = np.mgrid[x_min:x_max, y_min:y_max]
+        x_step = (x_max - x_min) / 100
+        y_step = (y_max - y_min) / 100
+        grid_x, grid_y = np.mgrid[x_min:x_max:x_step, y_min:y_max:y_step]
+
         grid = griddata(
             averaged[[col_name_1, col_name_2]],
             averaged["cost"],
