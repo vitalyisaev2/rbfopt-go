@@ -37,7 +37,8 @@ def main():
 
     # render plots
     renderer = Renderer(evaluations, root_dir)
-    renderer.matrix()
+    renderer.pairwise_heatmap_matrix()
+    renderer.correlations()
 
 
 if __name__ == "__main__":
