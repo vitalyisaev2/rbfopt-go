@@ -17,6 +17,7 @@ class Evaluator:
     __parameter_names: List[str]
     __evaluations: []
     __root_dir: pathlib.Path
+    __report: Report
 
     def __init__(self, client: Client, parameter_names: List[str], root_dir: pathlib.Path):
         self.__client = client
@@ -61,15 +62,18 @@ class Evaluator:
         )
 
         self.__client.register_report(report)
+        self.__report = report
 
-        # save report for future usage
+    def dump(self) -> (pd.DataFrame, Report):
+        # dump history of evaluations for future usage
+        evaluations = pd.DataFrame(self.__evaluations)
+        file_path = self.__root_dir.joinpath("evaluations.csv")
+        evaluations.to_csv(file_path, header=True)
+
+        # dump report for future usage
         file_path = self.__root_dir.joinpath("report.json")
         with open(file_path, "w") as f:
-            obj = jsons.dump(report)
+            obj = jsons.dump(self.__report)
             json.dump(obj, f)
 
-    def dump_evaluations(self) -> pd.DataFrame:
-        df = pd.DataFrame(self.__evaluations)
-        file_path = self.__root_dir.joinpath("evaluations.csv")
-        df.to_csv(file_path, header=True)
-        return df
+        return evaluations, self.__report

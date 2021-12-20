@@ -12,3 +12,10 @@ class Report:
     iterations: int
     evaluations: int
     fast_evaluations: int
+
+    def optimum_value(self, name: str) -> int:
+        for pv in self.optimum:
+            if pv.name == name:
+                return pv.value
+
+        raise ValueError(f"unexpected name {name}")

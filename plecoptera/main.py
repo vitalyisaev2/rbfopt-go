@@ -33,10 +33,10 @@ def main():
 
     # post report to server
     evaluator.register_report(*alg.optimize())
-    evaluations = evaluator.dump_evaluations()
+    evaluations, report = evaluator.dump()
 
     # render plots
-    renderer = Renderer(evaluations, root_dir)
+    renderer = Renderer(evaluations, report, root_dir)
     renderer.pairwise_heatmap_matrix()
     renderer.correlations()
 

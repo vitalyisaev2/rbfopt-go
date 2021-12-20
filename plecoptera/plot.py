@@ -1,5 +1,5 @@
 import pathlib
-import itertools
+from typing import Any
 
 import matplotlib.pyplot as plt
 import matplotlib.axes
@@ -9,16 +9,18 @@ import scipy.interpolate
 import scipy.stats
 import pandas as pd
 
-from typing import Any
+from plecoptera.report import Report
 
 
 class Renderer():
     __df: pd.DataFrame
     __root_dir: pathlib.Path
+    __report: Report
 
-    def __init__(self, df: pd.DataFrame, root_dir: pathlib.Path):
+    def __init__(self, df: pd.DataFrame, report: Report, root_dir: pathlib.Path):
         self.__df = df
         self.__root_dir = root_dir
+        self.__report = report
 
     def correlations(self):
         column_names = [column for column in self.__df.columns if column != 'cost']
@@ -113,15 +115,22 @@ class Renderer():
         # render interpolated grid
         # TODO: https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap-with-matplotlib/54088910#54088910
         im = ax.imshow(grid, cmap='jet', origin='lower', interpolation='lanczos', vmin=cost_min, vmax=cost_max)
+        ax.contour(grid)
+
+        # draw point with optimum
+        x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
+        opt_x, opt_y, opt_val = self.__derive_optimum_coordinates(col_name_1, col_name_2, x_scale, y_scale)
+        ax.scatter(opt_x, opt_y, color='red', marker='o', s=100)
+        ax.annotate(f"{opt_val}", (opt_x, opt_y))
 
         # assign real values to ticks
-        x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
         ax.set_xticklabels(map(lambda t: self.__absolutize_tick_labels(x_scale, t), ax.get_xticks().tolist()))
         ax.set_yticklabels(map(lambda t: self.__absolutize_tick_labels(y_scale, t), ax.get_yticks().tolist()))
 
         # assign axes labels
         ax.set_xlabel(col_name_1)
         ax.set_ylabel(col_name_2)
+
 
         return im
 
@@ -133,3 +142,13 @@ class Renderer():
             return tick * scale
         else:
             raise TypeError(f"unexpected type {tick}")
+
+    def __derive_optimum_coordinates(self,
+                                     col_name_1: str, col_name_2: str,
+                                     col_scale_1: float, col_scale_2: float,
+                                     ) -> (float, float, float):
+        col_val_1 = self.__report.optimum_value(col_name_1) / col_scale_1
+        col_val_2 = self.__report.optimum_value(col_name_2) / col_scale_2
+        cost_val = self.__report.cost
+
+        return col_val_1, col_val_2, cost_val
