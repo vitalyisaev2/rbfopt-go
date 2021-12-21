@@ -94,13 +94,16 @@ go get github.com/vitalyisaev2/plecoptera.git
 
 ## Example 
 
+### Code
+
 ```go
 package main
 
 import (
-    "context"
-    
-    "github.com/vitalyisaev2/plecoptera/optimization"
+	"context"
+	"fmt"
+
+	"github.com/vitalyisaev2/plecoptera/optimization"
 )
 
 // Define a configuration structure in any way you want.
@@ -114,7 +117,7 @@ type serviceConfig struct {
 
 // Define parameter setters. External optimizer will use them to mutate
 // configuration on each iteration of the algorithm.
-// If it's more convinient for you, instead of making explicit methods, 
+// If it's more convinient for you, instead of making explicit methods,
 // you may use anonymous functions later.
 func (cfg *serviceConfig) setParamX(value int) { cfg.paramX = value }
 func (cfg *serviceConfig) setParamY(value int) { cfg.paramY = value }
@@ -122,21 +125,26 @@ func (cfg *serviceConfig) setParamZ(value int) { cfg.paramZ = value }
 
 // Define a cost function. It must perform some computation on the basis
 // of configuration provided by external optimizer.
-// If it's more convinient for you, instead of making explicit method, 
+// If it's more convinient for you, instead of making explicit method,
 // you may use closure later.
 func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, error) {
-    // For clarity, we will use quite a simple polinomial function 
-    // with optimum that can be easily discovered: 
+	// For clarity, we will use quite a simple polinomial function
+	// with optimum that can be easily discovered:
 	// it corresponds to the upper bound of every variable.
-	// In real-world example, one will have to evaluate cost empirically.
+	// It's not possible to draw this function (because it's 4D),
+	// but it's quite easy to reason about it. 
+	//
+	// Please remember that in practice, you will have to evaluate cost empirically,
+	// and this is the place where you will launch performance tests
+	// and measure performance metrics.
 	x, y, z := cfg.paramX, cfg.paramY, cfg.paramZ
-	return optimization.Cost(-1 * (x * y  + z)), nil
+	return optimization.Cost(-1 * (x*y + z)), nil
 }
 
 func main() {
-    cfg := &serviceConfig{}
-    
-    // Describe the variables and set the bounds.
+	cfg := &serviceConfig{}
+
+	// Describe the variables and set the bounds.
 	settings := &optimization.Settings{
 		Parameters: []*optimization.ParameterDescription{
 			{
@@ -155,25 +163,64 @@ func main() {
 				ConfigModifier: cfg.setParamZ,
 			},
 		},
-		CostFunction:   cfg.costFunction,
-		// This variable controls trade-off between the accuracy of 
+		CostFunction: cfg.costFunction,
+		// This variable controls trade-off between the accuracy of
 		// determination of the optimum and the time spent on it.
-		MaxEvaluations: 100,
+		MaxEvaluations: 10,
 	}
 
-    // Here you may set timeout or provide this context
-    // with an instance of a logger (see library source code for details)
+	// Here you may set timeout or provide this context
+	// with an instance of a logger (see library source code for details)
 	ctx := context.Background()
 
-    // Run optimization
+	// Run optimization
 	report, err := optimization.Optimize(ctx, settings)
 	if err != nil {
-	    panic(err)
+		panic(err)
 	}
-	fmt.Println(report)
+
+	fmt.Printf("Minimal cost: %v\n", report.Cost)
+	fmt.Printf("Optimum:\n")
+	for _, p := range report.Optimum {
+		fmt.Printf("%s: %v\n", p.Name, p.Value)
+	}
 }
 
 ```
+
+Finally you'll see the parameter values corresponding to the 
+optimum of the cost function.
+```bash
+Minimal cost: -110
+Optimum:
+x: 10
+y: 10
+z: 10
+```
+
+### Analysis
+
+Aside from the discovered optimum value, Plecoptera provides you 
+with several plots that may give some inspiration 
+when exploring the cost function.
+You can find them in `/tmp/plecoptera_$timestamp` directory.
+
+#### Linear regression plot
+
+A simple correlation between parameters and 
+the cost function helps to estimate the contribution of each
+parameter to the final value of a cost function.
+
+![Alt text](https://github.com/vitalyisaev2/plecoptera/docs/correlation.png)
+
+#### Pairwise heatmaps
+
+On each of these plots cost function values are "mapped" to the axes
+formed by all possible combinations of parameters. 
+This matrix of plots helps to find out the nature of interaction
+of parameters between each other (and their influence on the cost function).
+
+![Alt text](https://github.com/vitalyisaev2/plecoptera/docs/pairwise_heatmap_matrix.png)
 
 ## Limitations
 
