@@ -46,7 +46,7 @@ a black box system and don't know the exact form of the cost function.
 the function gradient must be computed numerically. 
 This requires huge number of extra evaluations of the cost function. 
 Thus the gradient-descent methods are [ineffective](https://datascience.stackexchange.com/a/105080/97074)
-in the terms of cost functions evaluations.
+in the terms of the number of the cost functions evaluations.
 * For a certain type of functions, gradient-descent may end up with
 *local* optimum instead of *global* optimum. 
 
@@ -61,11 +61,10 @@ or [full whitepaper](http://www.optimization-online.org/DB_FILE/2014/09/4538.pdf
 Plecoptera consists of two parts:
 
 * Python script wrapping RBFopt.
-* Go library - an abstraction layer that hides the details of external optimizers
-from the clients.
+* Go library hiding the details of external optimizer work from clients.
 
-Go library executes Python script as a subprocess and runs the HTTP server 
-to handle requests emitted by the optimizer working on Python side.
+Go library executes Python script as a subprocess and runs 
+internal HTTP server to handle requests emitted by the optimizer.
 
 ## Installation
 
@@ -134,10 +133,11 @@ func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, er
 	return optimization.Cost(-1 * (x * y  + z)), nil
 }
 
-func main()cfg := &serviceConfig{}
-    // The most important part is optimizer settings.
+func main() {
+    cfg := &serviceConfig{}
+    
+    // Describe the variables and set the bounds.
 	settings := &optimization.Settings{
-	    // Here you describe the variables and set the bounds.
 		Parameters: []*optimization.ParameterDescription{
 			{
 				Name:           "x",
@@ -156,9 +156,8 @@ func main()cfg := &serviceConfig{}
 			},
 		},
 		CostFunction:   cfg.costFunction,
-		// This variable controls trade-off between 
-		// the accuracy of determination of the optimum 
-		// and the time spent on it.
+		// This variable controls trade-off between the accuracy of 
+		// determination of the optimum and the time spent on it.
 		MaxEvaluations: 100,
 	}
 
@@ -176,4 +175,6 @@ func main()cfg := &serviceConfig{}
 
 ```
 
-## Limiataions
+## Limitations
+
+* Floating-point and categorical parameters are not supported yet.
