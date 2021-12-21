@@ -79,7 +79,6 @@ class Renderer():
         for i in range(len(column_names) - 1):
             for j in range(0, i):
                 axes[j, i].axis('off')
-                pass
             for j in range(i + 1, len(column_names)):
                 col_name_1, col_name_2 = column_names[i], column_names[j]
                 ax = axes[j - 1, i]
@@ -110,12 +109,11 @@ class Renderer():
             data[[col_name_1, col_name_2]],
             data["cost"],
             (grid_x, grid_y),
-            method='linear',
+            method='cubic',
         )
 
         # render interpolated grid
-        # TODO: https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap-with-matplotlib/54088910#54088910
-        im = ax.imshow(grid, cmap='jet', origin='lower', interpolation='lanczos', vmin=cost_min, vmax=cost_max)
+        im = ax.imshow(grid, cmap='jet', origin='lower', interpolation='quadric', vmin=cost_min, vmax=cost_max)
 
         # scale ticks
         x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
@@ -140,7 +138,15 @@ class Renderer():
             if tick.is_integer():
                 return str(int(tick))
             else:
-                return "{.2f}".format(tick)
+                # FIXME: it's a hodgie (индусский) code now - write smart algorithm instead 
+                if tick >= 100:
+                    return str(int(tick))
+                elif tick >= 10:
+                    return "{:.1f}".format(tick)
+                elif tick >= 1:
+                    return "{:.2f}".format(tick)
+                else:
+                    return "{:.3f}".format(tick)
 
         return tick_formater
 
