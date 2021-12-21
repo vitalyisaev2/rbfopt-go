@@ -211,7 +211,7 @@ A simple correlation between parameters and
 the cost function helps to estimate the contribution of each
 parameter to the final value of a cost function.
 
-![Alt text](https://github.com/vitalyisaev2/plecoptera/docs/correlation.png)
+![Alt text](https://github.com/vitalyisaev2/plecoptera/tree/master/docs/correlation.png)
 
 #### Pairwise heatmaps
 
@@ -220,7 +220,7 @@ formed by all possible combinations of parameters.
 This matrix of plots helps to find out the nature of interaction
 of parameters between each other (and their influence on the cost function).
 
-![Alt text](https://github.com/vitalyisaev2/plecoptera/docs/pairwise_heatmap_matrix.png)
+![Alt text](/docs/pairwise_heatmap_matrix.png)
 
 ## Limitations
 
