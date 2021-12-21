@@ -1,9 +1,10 @@
 import pathlib
-from typing import Any
+from typing import Any, Callable
 
 import matplotlib.pyplot as plt
 import matplotlib.axes
 import matplotlib.image
+import matplotlib.ticker
 import numpy as np
 import scipy.interpolate
 import scipy.stats
@@ -115,33 +116,33 @@ class Renderer():
         # render interpolated grid
         # TODO: https://stackoverflow.com/questions/33282368/plotting-a-2d-heatmap-with-matplotlib/54088910#54088910
         im = ax.imshow(grid, cmap='jet', origin='lower', interpolation='lanczos', vmin=cost_min, vmax=cost_max)
-        ax.contour(grid)
+
+        # scale ticks
+        x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(self.__tick_scaler(x_scale)))
+        ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(self.__tick_scaler(y_scale)))
 
         # draw point with optimum
-        x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
         opt_x, opt_y, opt_val = self.__derive_optimum_coordinates(col_name_1, col_name_2, x_scale, y_scale)
         ax.scatter(opt_x, opt_y, color='red', marker='o', s=100)
         ax.annotate(f"{opt_val}", (opt_x, opt_y))
-
-        # assign real values to ticks
-        ax.set_xticklabels(map(lambda t: self.__absolutize_tick_labels(x_scale, t), ax.get_xticks().tolist()))
-        ax.set_yticklabels(map(lambda t: self.__absolutize_tick_labels(y_scale, t), ax.get_yticks().tolist()))
 
         # assign axes labels
         ax.set_xlabel(col_name_1)
         ax.set_ylabel(col_name_2)
 
-
         return im
 
     @staticmethod
-    def __absolutize_tick_labels(scale: float, tick: Any):
-        if isinstance(tick, int):
-            return int(tick * scale)
-        elif isinstance(tick, float):
-            return tick * scale
-        else:
-            raise TypeError(f"unexpected type {tick}")
+    def __tick_scaler(scale) -> Callable[[Any, Any], str]:
+        def tick_formater(val, pos) -> str:
+            tick = val * scale
+            if tick.is_integer():
+                return str(int(tick))
+            else:
+                return "{.2f}".format(tick)
+
+        return tick_formater
 
     def __derive_optimum_coordinates(self,
                                      col_name_1: str, col_name_2: str,

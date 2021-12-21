@@ -34,9 +34,10 @@ func (cfg *serviceConfig) setParamY(value int) { cfg.paramY = value }
 func (cfg *serviceConfig) setParamZ(value int) { cfg.paramZ = value }
 
 func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, error) {
-	// using quite a simple function with minimum that can be easily discovered:
-	// it matches the upper bound of every variable
-	return optimization.Cost(-1 * (cfg.paramX * cfg.paramY + cfg.paramZ)), nil
+	// using quite a simple polinomial function with minimum that can be easily discovered:
+	// it corresponds to the upper bound of every variable
+	x, y, z := cfg.paramX, cfg.paramY, cfg.paramZ
+	return optimization.Cost(-1 * (x * y  + z)), nil
 }
 
 func TestPlecoptera(t *testing.T) {
