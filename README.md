@@ -89,7 +89,7 @@ virtualenv venv
 source venv/bin/activate
 # TODO: release on pypi
 pip install git+https://github.com/vitalyisaev2/plecoptera.git   
-go get github.com/vitalyisaev2/plecoptera.git   
+go get github.com/vitalyisaev2/plecoptera
 ```
 
 ## Example 
