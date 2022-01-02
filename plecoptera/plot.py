@@ -94,6 +94,8 @@ class Renderer():
                                   col_name_1: str,
                                   col_name_2: str) -> matplotlib.image.AxesImage:
         data = self.__df[[col_name_1, col_name_2, "cost"]]
+
+        # select the minimums
         data = data.groupby([col_name_1, col_name_2])['cost'].agg(lambda x: x.min()).reset_index()
 
         # compute grid bounds
