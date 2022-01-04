@@ -61,7 +61,7 @@ class Renderer():
         data = df.groupby(col_name)['cost'].agg(lambda arg: arg.min()).reset_index()
 
         color = ColorHash(col_name).hex
-        ax.plot(data[col_name], data["cost"], linewidth=0, marker='o', label=f'{col_name} data points', color=color)
+        ax.plot(data[col_name], data["cost"], linewidth=0, marker='o', color=color)
 
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
@@ -89,8 +89,6 @@ class Renderer():
                 im = self.__render_pairwise_heatmap(ax, col_name_1, col_name_2)
 
         fig.colorbar(im, ax=axes, shrink=0.6)
-
-        fig.tight_layout()
 
         figure_path = self.__root_dir.joinpath("pairwise_heatmap_matrix.png")
         fig.savefig(figure_path)
