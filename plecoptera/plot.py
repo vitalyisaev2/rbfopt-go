@@ -66,7 +66,14 @@ class Renderer():
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
 
-        ax.legend(fancybox=True, shadow=True)
+        # draw point with optimum
+        opt_arg = self.__report.optimum_argument(col_name)
+        opt_val = self.__report.cost
+        ax.scatter(opt_arg, opt_val, color='red', marker='o', s=100)
+        ax.annotate("{:.2f}".format(opt_val), (opt_arg, opt_val))
+
+        # TODO: think about the optimum
+        # ax.legend(fancybox=True, shadow=True)
 
     def pairwise_heatmap_matrix(self):
         column_names = [column for column in self.__df.columns if column != 'cost']
@@ -161,8 +168,8 @@ class Renderer():
                                      col_name_1: str, col_name_2: str,
                                      col_scale_1: float, col_scale_2: float,
                                      ) -> (float, float, float):
-        col_val_1 = self.__report.optimum_value(col_name_1) / col_scale_1
-        col_val_2 = self.__report.optimum_value(col_name_2) / col_scale_2
+        col_val_1 = self.__report.optimum_argument(col_name_1) / col_scale_1
+        col_val_2 = self.__report.optimum_argument(col_name_2) / col_scale_2
         cost_val = self.__report.cost
 
         return col_val_1, col_val_2, cost_val

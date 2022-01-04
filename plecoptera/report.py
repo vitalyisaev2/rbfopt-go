@@ -13,7 +13,7 @@ class Report:
     evaluations: int
     fast_evaluations: int
 
-    def optimum_value(self, name: str) -> int:
+    def optimum_argument(self, name: str) -> int:
         for pv in self.optimum:
             if pv.name == name:
                 return pv.value

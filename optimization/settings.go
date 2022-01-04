@@ -18,6 +18,7 @@ type Settings struct {
 	Parameters     []*ParameterDescription
 	CostFunction   CostFunction
 	MaxEvaluations uint
+	MaxIterations  uint
 }
 
 func (s *Settings) validate() error {
@@ -37,6 +38,10 @@ func (s *Settings) validate() error {
 
 	if s.MaxEvaluations == 0 {
 		return errors.New("MaxEvaluations is empty")
+	}
+
+	if s.MaxIterations == 0 {
+		return errors.New("MaxIterations is empty")
 	}
 
 	return nil

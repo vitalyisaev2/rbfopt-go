@@ -2,18 +2,17 @@
 import pathlib
 import sys
 
-import pandas as pd
 import rbfopt
+
 from plecoptera.client import Client
 from plecoptera.evaluator import Evaluator
-from plecoptera.settings import Settings
 from plecoptera.plot import Renderer
+from plecoptera.settings import Settings
 
 
 def main():
     # prepare infrastructure
     root_dir = pathlib.Path(sys.argv[1])
-    print(type(root_dir), root_dir)
     settings = Settings.from_file(root_dir)
 
     client = Client(settings.endpoint)
@@ -28,7 +27,10 @@ def main():
     )
 
     # perform optimization
-    settings = rbfopt.RbfoptSettings(max_evaluations=settings.max_evaluations)
+    settings = rbfopt.RbfoptSettings(
+        max_evaluations=settings.max_evaluations,
+        max_iterations=settings.max_iterations,
+    )
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
 
     # post report to server

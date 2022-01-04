@@ -37,7 +37,7 @@ func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, er
 	// using quite a simple polinomial function with minimum that can be easily discovered:
 	// it corresponds to the upper bound of every variable
 	x, y, z := cfg.paramX, cfg.paramY, cfg.paramZ
-	return optimization.Cost(-1 * (x * y  + z)), nil
+	return optimization.Cost(-1 * (x*y + z)), nil
 }
 
 func TestPlecoptera(t *testing.T) {
@@ -63,6 +63,7 @@ func TestPlecoptera(t *testing.T) {
 		},
 		CostFunction:   cfg.costFunction,
 		MaxEvaluations: 25,
+		MaxIterations:  25,
 	}
 
 	logger := newLogger()

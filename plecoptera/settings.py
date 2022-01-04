@@ -14,6 +14,7 @@ class Settings:
     var_upper: np.array
     var_types: np.chararray
     endpoint: str
+    max_iterations: int
     max_evaluations: int
 
     @classmethod
@@ -48,5 +49,6 @@ class Settings:
             var_upper=var_upper,
             var_types=var_types,
             endpoint=ss['endpoint'],
-            max_evaluations=ss['max_evaluations']
+            max_evaluations=ss['max_evaluations'],
+            max_iterations=ss['max_iterations'],
         )
