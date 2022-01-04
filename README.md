@@ -201,9 +201,15 @@ z: 10
 ### Analysis
 
 Aside from the discovered optimum value, Plecoptera provides you 
-with several plots that may give some inspiration 
+with several plots that may give you some inspiration 
 when exploring the cost function.
 You can find them in `/tmp/plecoptera_$timestamp` directory.
+
+Please note that on each of these plots not all data points are depicted,
+but only the minimum reached in this point.
+For a particular value of a certain parameter, optimizer may do several cost function evaluations
+(with different values of other parameters), but only the minimal  
+value of cost function is shown on the plot.
 
 #### Linear regression plot
 
@@ -216,7 +222,7 @@ parameter to the final value of a cost function.
 #### Pairwise heatmaps
 
 On each of these plots cost function values are "mapped" to the axes
-formed by all possible combinations of parameters. 
+formed by all possible pairs of parameters. 
 This matrix of plots helps to find out the nature of interaction
 of parameters between each other (and their influence on the cost function).
 

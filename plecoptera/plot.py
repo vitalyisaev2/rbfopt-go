@@ -1,14 +1,15 @@
 import pathlib
 from typing import Any, Callable
 
-import matplotlib.pyplot as plt
 import matplotlib.axes
 import matplotlib.image
+import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
+import pandas as pd
 import scipy.interpolate
 import scipy.stats
-import pandas as pd
+from colorhash import ColorHash
 
 from plecoptera.report import Report
 
@@ -48,21 +49,24 @@ class Renderer():
             else:
                 axes[i].axis('off')
 
+        fig.tight_layout()
+
         figure_path = self.__root_dir.joinpath("correlation.png")
         fig.savefig(figure_path)
 
     def __render_correlation(self, ax: matplotlib.axes.Axes, col_name: str):
-        x = self.__df[col_name]
-        y = self.__df['cost']
-        slope, intercept, r, p, stderr = scipy.stats.linregress(x, y)
+        df = pd.DataFrame({col_name: self.__df[col_name], "cost": self.__df['cost']})
 
-        line = f'Regression: cost={intercept:.2f}+{slope:.2f}{col_name}, r={r:.2f}'
+        # select the minimums
+        data = df.groupby(col_name)['cost'].agg(lambda arg: arg.min()).reset_index()
 
-        ax.plot(x, y, linewidth=0, marker='o', label='Data points', color='blue')
-        ax.plot(x, intercept + slope * x, label=line)
-        ax.set_xlabel(col_name)
-        ax.set_ylabel('Cost')
-        ax.legend(facecolor='white', loc='upper center')
+        color = ColorHash(col_name).hex
+        ax.plot(data[col_name], data["cost"], linewidth=0, marker='o', label=f'{col_name} data points', color=color)
+
+        ax.set_xlabel(col_name, fontsize=14)
+        ax.set_ylabel('Cost function', fontsize=14)
+
+        ax.legend(fancybox=True, shadow=True)
 
     def pairwise_heatmap_matrix(self):
         column_names = [column for column in self.__df.columns if column != 'cost']
@@ -85,6 +89,8 @@ class Renderer():
                 im = self.__render_pairwise_heatmap(ax, col_name_1, col_name_2)
 
         fig.colorbar(im, ax=axes, shrink=0.6)
+
+        fig.tight_layout()
 
         figure_path = self.__root_dir.joinpath("pairwise_heatmap_matrix.png")
         fig.savefig(figure_path)
@@ -126,11 +132,11 @@ class Renderer():
         # draw point with optimum
         opt_x, opt_y, opt_val = self.__derive_optimum_coordinates(col_name_1, col_name_2, x_scale, y_scale)
         ax.scatter(opt_x, opt_y, color='red', marker='o', s=100)
-        ax.annotate(f"{opt_val}", (opt_x, opt_y))
+        ax.annotate("{:.2f}".format(opt_val), (opt_x, opt_y))
 
         # assign axes labels
-        ax.set_xlabel(col_name_1)
-        ax.set_ylabel(col_name_2)
+        ax.set_xlabel(col_name_1, fontsize=14)
+        ax.set_ylabel(col_name_2, fontsize=14)
 
         return im
 
@@ -141,7 +147,7 @@ class Renderer():
             if tick.is_integer():
                 return str(int(tick))
             else:
-                # FIXME: it's a hodgie (индусский) code now - write smart algorithm instead 
+                # FIXME: it's a hodgie (индусский) code now - write smart algorithm instead of that
                 if tick >= 100:
                     return str(int(tick))
                 elif tick >= 10:
