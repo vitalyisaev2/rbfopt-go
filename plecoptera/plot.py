@@ -20,12 +20,12 @@ class Renderer():
     __report: Report
 
     def __init__(self, df: pd.DataFrame, report: Report, root_dir: pathlib.Path):
-        self.__df = df
+        self.__df = df[df["invalid_parameter_combination"] == False]
         self.__root_dir = root_dir
         self.__report = report
 
     def correlations(self):
-        column_names = [column for column in self.__df.columns if column != 'cost']
+        column_names = [column for column in self.__df.columns if column not in ('cost', 'invalid_parameter_combination')]
 
         if len(column_names) <= 2:
             n_rows, n_columns = 1, len(column_names)
@@ -76,7 +76,7 @@ class Renderer():
         # ax.legend(fancybox=True, shadow=True)
 
     def pairwise_heatmap_matrix(self):
-        column_names = [column for column in self.__df.columns if column != 'cost']
+        column_names = [column for column in self.__df.columns if column not in ('cost', 'invalid_parameter_combination')]
 
         # approximate size that make image look well
         figsize = (4 * len(column_names), 4 * len(column_names))

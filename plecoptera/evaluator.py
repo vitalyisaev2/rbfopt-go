@@ -35,11 +35,12 @@ class Evaluator:
 
     def estimate_cost(self, raw_values: np.ndarray) -> Cost:
         parameter_values = self.__np_array_to_parameter_values(raw_values)
-        cost = self.__client.estimate_cost(parameter_values)
+        cost, invalid_parameter_combination = self.__client.estimate_cost(parameter_values)
 
         # store evaluation result for the future use
         entry = {name: value for (name, value) in zip(self.__parameter_names, raw_values)}
         entry["cost"] = cost
+        entry["invalid_parameter_combination"] = invalid_parameter_combination
 
         self.__evaluations.append(entry)
 

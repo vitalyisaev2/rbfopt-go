@@ -18,7 +18,7 @@ class Client():
         self.url_head = f'http://{endpoint}'
         self.session = requests.Session()
 
-    def estimate_cost(self, parameter_values: List[ParameterValue]) -> Cost:
+    def estimate_cost(self, parameter_values: List[ParameterValue]) -> (Cost, bool):
         print(f"request '{parameter_values}'")
 
         payload = dict(parameter_values=parameter_values)
@@ -32,7 +32,7 @@ class Client():
         if response.status_code != HTTPStatus.OK:
             raise ValueError(f'invalid status code {response.status_code}')
         else:
-            return response.json()["cost"]
+            return response.json()["cost"], response.json()["invalid_parameter_combination"]
 
     def register_report(self, report: Report):
         print(f"request '{report}'")

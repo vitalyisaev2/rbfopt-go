@@ -23,7 +23,8 @@ type estimateCostRequest struct {
 }
 
 type estimateCostResponse struct {
-	Cost float64 `json:"cost"`
+	Cost                        float64 `json:"cost"`
+	InvalidParameterCombination bool    `json:"invalid_parameter_combination"`
 }
 
 func (s *server) estimateCostHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +55,10 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 		"cost", cost,
 	)
 
-	response := &estimateCostResponse{Cost: cost}
+	response := &estimateCostResponse{
+		Cost:                        cost,
+		InvalidParameterCombination: errors.Is(err, ErrInvalidParameterCombination),
+	}
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "json encode")
