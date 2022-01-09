@@ -46,7 +46,9 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 	ctx := logr.NewContext(r.Context(), logger)
 	cost, err := s.estimator.estimateCost(ctx, request.ParameterValues)
 	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
+		if !errors.Is(err, ErrInvalidParameterCombination) {
+			return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
+		}
 	}
 
 	logger.V(1).Info(
