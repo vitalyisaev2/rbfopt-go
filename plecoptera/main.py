@@ -32,7 +32,7 @@ def main():
     settings = rbfopt.RbfoptSettings(
         max_evaluations=settings.max_evaluations,
         max_iterations=settings.max_iterations,
-        rand_seed=time.mktime(datetime.now().timetuple()),
+        rand_seed=int(time.mktime(datetime.now().timetuple())),
     )
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
 
