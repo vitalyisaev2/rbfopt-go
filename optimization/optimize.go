@@ -55,8 +55,8 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 		return nil, errors.Wrapf(err, "run python part")
 	}
 
-	// get request from service
-	report := srv.report
+	// obtain final report
+	report := estimator.finalReport
 	if report == nil {
 		return nil, errors.New("protocol error: report is nil")
 	}

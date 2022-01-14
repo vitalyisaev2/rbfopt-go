@@ -12,20 +12,10 @@ import (
 type server struct {
 	httpServer *http.Server
 	estimator  *costEstimator
-	report     *Report
 	logger     logr.Logger
 }
 
 // Estimate Cost
-
-type estimateCostRequest struct {
-	ParameterValues []*ParameterValue `json:"parameter_values"`
-}
-
-type estimateCostResponse struct {
-	Cost                        float64 `json:"cost"`
-	InvalidParameterCombination bool    `json:"invalid_parameter_combination"`
-}
 
 func (s *server) estimateCostHandler(w http.ResponseWriter, r *http.Request) {
 	s.middleware(w, r, s.estimateCost)
@@ -43,24 +33,16 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
 	}
 
+	logger.V(1).Info("estimate cost", "request", request)
+
 	ctx := logr.NewContext(r.Context(), logger)
-	cost, err := s.estimator.estimateCost(ctx, request.ParameterValues)
+	response, err := s.estimator.estimateCost(ctx, request)
 	if err != nil {
-		if !errors.Is(err, ErrInvalidParameterCombination) {
-			return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
-		}
+		return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
 	}
 
-	logger.V(1).Info(
-		"estimate cost",
-		"parameter_values", request.ParameterValues,
-		"cost", cost,
-	)
+	logger.V(1).Info("estimate cost", "response", response)
 
-	response := &estimateCostResponse{
-		Cost:                        cost,
-		InvalidParameterCombination: errors.Is(err, ErrInvalidParameterCombination),
-	}
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "json encode")
@@ -70,14 +52,6 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 }
 
 // Register report
-
-// registerReportRequest contains the output of RBFOpt
-type registerReportRequest struct {
-	Report *Report `json:"report"`
-}
-
-type registerReportResponse struct {
-}
 
 func (s *server) registerReportHandler(w http.ResponseWriter, r *http.Request) {
 	s.middleware(w, r, s.registerReport)
@@ -99,12 +73,13 @@ func (s *server) registerReport(
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
 	}
 
-	// simply cache the report
-	logger.V(1).Info("report received", "report", request.Report)
-	s.report = request.Report
+	logger.V(1).Info("register report", "report", request.Report)
 
-	// response is empty, but for the sake of symmetry, fill it anyway
-	response := &http.Response{}
+	response, err := s.estimator.registerReport(r.Context(), request)
+	if err != nil {
+		return http.StatusInternalServerError, errors.Wrap(err, "json encode")
+	}
+
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "json encode")

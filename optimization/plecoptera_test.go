@@ -41,52 +41,116 @@ func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, er
 }
 
 func TestPlecoptera(t *testing.T) {
-	cfg := &serviceConfig{}
+	t.Run("positive", func(t *testing.T) {
+		cfg := &serviceConfig{}
 
-	settings := &optimization.Settings{
-		Parameters: []*optimization.ParameterDescription{
-			{
-				Name:           "x",
-				Bound:          &optimization.Bound{From: 0, To: 10},
-				ConfigModifier: cfg.setParamX,
+		// set bounds to parameters
+		settings := &optimization.Settings{
+			Parameters: []*optimization.ParameterDescription{
+				{
+					Name:           "x",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamX,
+				},
+				{
+					Name:           "y",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamY,
+				},
+				{
+					Name:           "z",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamZ,
+				},
 			},
-			{
-				Name:           "y",
-				Bound:          &optimization.Bound{From: 0, To: 10},
-				ConfigModifier: cfg.setParamY,
+			CostFunction:   cfg.costFunction,
+			MaxEvaluations: 25,
+			MaxIterations:  25,
+		}
+
+		logger := newLogger()
+		ctx := logr.NewContext(context.Background(), logger)
+
+		// perform optimization
+		report, err := optimization.Optimize(ctx, settings)
+		require.NoError(t, err)
+		require.NotNil(t, report)
+
+		// validate that the optimum was reached
+		expectedOptimumCfg := &serviceConfig{
+			paramX: settings.Parameters[0].Bound.To,
+			paramY: settings.Parameters[1].Bound.To,
+			paramZ: settings.Parameters[2].Bound.To,
+		}
+
+		expectedOptimumCost, err := expectedOptimumCfg.costFunction(context.Background())
+		require.NoError(t, err)
+
+		require.Equal(t, expectedOptimumCost, report.Cost)
+		require.Len(t, report.Optimum, len(settings.Parameters))
+
+		for i := 0; i < len(settings.Parameters); i++ {
+			require.Equal(t, report.Optimum[i].Name, settings.Parameters[i].Name)
+			require.Equal(t, report.Optimum[i].Value, settings.Parameters[i].Bound.To)
+		}
+	})
+
+	t.Run("invalid parameters combination", func(t *testing.T) {
+		cfg := &serviceConfig{}
+
+		settings := &optimization.Settings{
+			Parameters: []*optimization.ParameterDescription{
+				{
+					Name:           "x",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamX,
+				},
+				{
+					Name:           "y",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamY,
+				},
+				{
+					Name:           "z",
+					Bound:          &optimization.Bound{From: 0, To: 10},
+					ConfigModifier: cfg.setParamZ,
+				},
 			},
-			{
-				Name:           "z",
-				Bound:          &optimization.Bound{From: 0, To: 10},
-				ConfigModifier: cfg.setParamZ,
+			// the cost function is almost the same as in previous test case, but now we impose some conditions on variables
+			CostFunction: func(ctx context.Context) (optimization.Cost, error) {
+				// explicitly validate parameters, throw errors if they're invalid
+				if cfg.paramX < cfg.paramY {
+					return optimization.MaxCost, optimization.ErrInvalidParameterCombination
+				}
+
+				return cfg.costFunction(ctx)
 			},
-		},
-		CostFunction:   cfg.costFunction,
-		MaxEvaluations: 25,
-		MaxIterations:  25,
-	}
+			MaxEvaluations: 25,
+			MaxIterations:  25,
+		}
 
-	logger := newLogger()
-	ctx := logr.NewContext(context.Background(), logger)
+		logger := newLogger()
+		ctx := logr.NewContext(context.Background(), logger)
 
-	report, err := optimization.Optimize(ctx, settings)
-	require.NoError(t, err)
-	require.NotNil(t, report)
+		report, err := optimization.Optimize(ctx, settings)
+		require.NoError(t, err)
+		require.NotNil(t, report)
 
-	expectedOptimumCfg := &serviceConfig{
-		paramX: settings.Parameters[0].Bound.To,
-		paramY: settings.Parameters[1].Bound.To,
-		paramZ: settings.Parameters[2].Bound.To,
-	}
+		expectedOptimumCfg := &serviceConfig{
+			paramX: settings.Parameters[0].Bound.To,
+			paramY: settings.Parameters[1].Bound.To,
+			paramZ: settings.Parameters[2].Bound.To,
+		}
 
-	expectedOptimumCost, err := expectedOptimumCfg.costFunction(context.Background())
-	require.NoError(t, err)
+		expectedOptimumCost, err := expectedOptimumCfg.costFunction(context.Background())
+		require.NoError(t, err)
 
-	require.Equal(t, expectedOptimumCost, report.Cost)
-	require.Len(t, report.Optimum, len(settings.Parameters))
+		require.Equal(t, expectedOptimumCost, report.Cost)
+		require.Len(t, report.Optimum, len(settings.Parameters))
 
-	for i := 0; i < len(settings.Parameters); i++ {
-		require.Equal(t, report.Optimum[i].Name, settings.Parameters[i].Name)
-		require.Equal(t, report.Optimum[i].Value, settings.Parameters[i].Bound.To)
-	}
+		for i := 0; i < len(settings.Parameters); i++ {
+			require.Equal(t, report.Optimum[i].Name, settings.Parameters[i].Name)
+			require.Equal(t, report.Optimum[i].Value, settings.Parameters[i].Bound.To)
+		}
+	})
 }

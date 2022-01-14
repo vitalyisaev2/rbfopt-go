@@ -9,8 +9,6 @@ import (
 
 type Cost = float64
 
-const MaxCost Cost = math.MaxFloat64
-
 // CostFunction is implemented by clients. Optimization algorithm will try to optimization
 // your parameters on the basis of this function. CostFunction call is expected to be expensive,
 // so client should check context expiration.
@@ -19,6 +17,9 @@ type CostFunction func(ctx context.Context) (Cost, error)
 // ErrInvalidParameterCombination notifies optimizer about invalid combination of parameters.
 // CostFunction must return MaxCost and ErrInvalidParameterCombination if it happened.
 var ErrInvalidParameterCombination = errors.New("Invalid parameter combination")
+
+// MaxCost represents the highest possible value of a cost function
+const MaxCost Cost = math.MaxFloat64
 
 // Settings contains optimization techniques
 type Settings struct {
