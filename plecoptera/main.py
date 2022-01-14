@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 import pathlib
 import sys
-import time
-from datetime import datetime
 
 import rbfopt
 
@@ -32,7 +30,6 @@ def main():
     settings = rbfopt.RbfoptSettings(
         max_evaluations=settings.max_evaluations,
         max_iterations=settings.max_iterations,
-        rand_seed=time.mktime(datetime.now().timetuple()),
     )
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
 
