@@ -21,7 +21,7 @@ func (s *server) estimateCostHandler(w http.ResponseWriter, r *http.Request) {
 	s.middleware(w, r, s.estimateCost)
 }
 
-func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http.Request) (int, error) {
+func (s *server) estimateCost(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, error) {
 	if r.Method != http.MethodGet {
 		return http.StatusMethodNotAllowed, errors.New("invalid method")
 	}
@@ -33,15 +33,10 @@ func (s *server) estimateCost(logger logr.Logger, w http.ResponseWriter, r *http
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
 	}
 
-	logger.V(1).Info("estimate cost", "request", request)
-
-	ctx := logr.NewContext(r.Context(), logger)
 	response, err := s.estimator.estimateCost(ctx, request)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "estimate cost")
 	}
-
-	logger.V(1).Info("estimate cost", "response", response)
 
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(response); err != nil {
@@ -58,7 +53,7 @@ func (s *server) registerReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) registerReport(
-	logger logr.Logger,
+	ctx context.Context,
 	w http.ResponseWriter,
 	r *http.Request,
 ) (int, error) {
@@ -73,9 +68,7 @@ func (s *server) registerReport(
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
 	}
 
-	logger.V(1).Info("register report", "report", request.Report)
-
-	response, err := s.estimator.registerReport(r.Context(), request)
+	response, err := s.estimator.registerReport(ctx, request)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "json encode")
 	}
@@ -88,10 +81,11 @@ func (s *server) registerReport(
 	return http.StatusOK, nil
 }
 
-type handlerFunc func(logger logr.Logger, w http.ResponseWriter, r *http.Request) (int, error)
+type handlerFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) (int, error)
 
 func (s *server) middleware(w http.ResponseWriter, r *http.Request, handler handlerFunc) {
 	logger := s.annotateLogger(r)
+	ctx := logr.NewContext(r.Context(), logger)
 
 	logger.V(0).Info("request handling started")
 
@@ -101,7 +95,7 @@ func (s *server) middleware(w http.ResponseWriter, r *http.Request, handler hand
 		}
 	}()
 
-	statusCode, err := handler(logger, w, r)
+	statusCode, err := handler(ctx, w, r)
 	w.WriteHeader(statusCode)
 	if err != nil {
 		logger.Error(err, "request handling finished")

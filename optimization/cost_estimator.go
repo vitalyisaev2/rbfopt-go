@@ -3,15 +3,19 @@ package optimization
 import (
 	"context"
 
+	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 )
 
 type costEstimator struct {
+	attempts    int // attempts made by optimizer
 	settings    *Settings
 	finalReport *Report
 }
 
 func (ce *costEstimator) estimateCost(ctx context.Context, request *estimateCostRequest) (*estimateCostResponse, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+
 	// apply all values to config first
 	for _, pv := range request.ParameterValues {
 		parameterDesc, err := ce.settings.getParameterByName(pv.Name)
@@ -21,6 +25,8 @@ func (ce *costEstimator) estimateCost(ctx context.Context, request *estimateCost
 
 		parameterDesc.ConfigModifier(pv.Value)
 	}
+
+	ce.attempts++
 
 	// then run cost estimation
 	cost, err := ce.settings.CostFunction(ctx)
@@ -33,10 +39,19 @@ func (ce *costEstimator) estimateCost(ctx context.Context, request *estimateCost
 		return nil, errors.Wrap(err, "cost function call")
 	}
 
-	return &estimateCostResponse{Cost: cost, InvalidParameterCombination: false}, nil
+	response := &estimateCostResponse{Cost: cost, InvalidParameterCombination: false}
+
+	logger.V(1).Info("estimate cost",
+		"attempts", ce.attempts,
+		"request", request,
+		"response", response)
+
+	return response, nil
 }
 
-func (ce *costEstimator) registerReport(_ context.Context, request *registerReportRequest) (*registerReportResponse, error) {
+func (ce *costEstimator) registerReport(ctx context.Context, request *registerReportRequest) (*registerReportResponse, error) {
+	logger := logr.FromContextOrDiscard(ctx)
+
 	if ce.finalReport != nil {
 		return nil, errors.New("report has been already registered")
 	}
@@ -46,6 +61,8 @@ func (ce *costEstimator) registerReport(_ context.Context, request *registerRepo
 	}
 
 	ce.finalReport = request.Report
+
+	logger.V(0).Info("register report", "report", request.Report)
 
 	// response is empty, but for the sake of symmetry, return it anyway
 	return &registerReportResponse{}, nil
