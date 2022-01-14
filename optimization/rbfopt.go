@@ -21,10 +21,10 @@ type rbfOptSettings struct {
 }
 
 type rbfOptWrapper struct {
+	ctx      context.Context
+	settings *Settings
 	rootDir  string
 	endpoint string
-	settings *Settings
-	ctx      context.Context
 }
 
 const rbfOptExecutable = "plecoptera"
@@ -36,6 +36,7 @@ func (r *rbfOptWrapper) run() error {
 		return errors.Wrap(err, "dump config")
 	}
 
+	//nolint:gosec
 	cmd := exec.Command(rbfOptExecutable, r.rootDir)
 	if err := r.executeCommand(r.ctx, cmd); err != nil {
 		return errors.Wrap(err, "execute command")
@@ -86,6 +87,7 @@ func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error
 
 	if stdoutBuf.Len() > 0 {
 		logger.V(1).Info("subprocess stdout")
+
 		scanner := bufio.NewScanner(stdoutBuf)
 		for scanner.Scan() {
 			logger.V(1).Info(scanner.Text())
@@ -94,6 +96,7 @@ func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error
 
 	if stderrBuf.Len() > 0 {
 		logger.V(1).Info("subprocess stderr")
+
 		scanner := bufio.NewScanner(stderrBuf)
 		for scanner.Scan() {
 			logger.V(1).Info(scanner.Text())

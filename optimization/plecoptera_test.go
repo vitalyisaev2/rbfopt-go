@@ -15,6 +15,7 @@ import (
 func newLogger() logr.Logger {
 	config := zap.NewDevelopmentConfig()
 	config.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
 	zapLog, err := config.Build()
 	if err != nil {
 		panic(err)
@@ -37,12 +38,13 @@ func (cfg *serviceConfig) costFunction(_ context.Context) (optimization.Cost, er
 	// using quite a simple polinomial function with minimum that can be easily discovered:
 	// it corresponds to the upper bound of every variable
 	x, y, z := cfg.paramX, cfg.paramY, cfg.paramZ
+
 	return optimization.Cost(-1 * (x*y + z)), nil
 }
 
 func TestPlecoptera(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
-		cfg := &serviceConfig{}
+		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
 		// set bounds to parameters
 		settings := &optimization.Settings{
@@ -97,7 +99,7 @@ func TestPlecoptera(t *testing.T) {
 	})
 
 	t.Run("invalid parameters combination", func(t *testing.T) {
-		cfg := &serviceConfig{}
+		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
 		settings := &optimization.Settings{
 			Parameters: []*optimization.ParameterDescription{

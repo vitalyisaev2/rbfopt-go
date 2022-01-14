@@ -29,6 +29,7 @@ func (s *server) estimateCost(ctx context.Context, w http.ResponseWriter, r *htt
 
 	decoder := json.NewDecoder(r.Body)
 	request := &estimateCostRequest{}
+
 	err := decoder.Decode(request)
 	if err != nil {
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
@@ -64,6 +65,7 @@ func (s *server) registerReport(
 
 	decoder := json.NewDecoder(r.Body)
 	request := &registerReportRequest{}
+
 	err := decoder.Decode(request)
 	if err != nil {
 		return http.StatusBadRequest, errors.Wrap(err, "json decode")
@@ -98,9 +100,11 @@ func (s *server) middleware(w http.ResponseWriter, r *http.Request, handler hand
 
 	statusCode, err := handler(ctx, w, r)
 	w.WriteHeader(statusCode)
+
 	if err != nil {
 		// cache errors
 		s.lastError = err
+
 		logger.Error(err, "request handling finished")
 	} else {
 		logger.V(0).Info("request handling finished")
@@ -137,7 +141,7 @@ func newServer(logger logr.Logger, endpoint string, estimator *costEstimator) *s
 	handler.HandleFunc("/register_report", srv.registerReportHandler)
 
 	go func() {
-		if err := srv.httpServer.ListenAndServe(); err != http.ErrServerClosed {
+		if err := srv.httpServer.ListenAndServe(); errors.Is(err, http.ErrServerClosed) {
 			srv.logger.Error(err, "http server listen and serve")
 		}
 	}()

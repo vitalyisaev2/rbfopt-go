@@ -8,9 +8,9 @@ import (
 )
 
 type costEstimator struct {
-	attempts    int // attempts made by optimizer
 	settings    *Settings
 	finalReport *Report
+	attempts    int
 }
 
 func (ce *costEstimator) estimateCost(ctx context.Context, request *estimateCostRequest) (*estimateCostResponse, error) {

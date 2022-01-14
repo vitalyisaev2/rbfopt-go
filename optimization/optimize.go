@@ -11,19 +11,24 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ParameterValue describes some value of a CostFunction argument
 type ParameterValue struct {
 	Name  string
 	Value int
 }
 
+// Report contains information about the finished optimization process
+//nolint:govet
 type Report struct {
-	Cost            Cost              `json:"cost"`
-	Optimum         []*ParameterValue `json:"optimum"`
+	Cost            Cost              `json:"cost"`    // Discovered optimal value of a CostFunction
+	Optimum         []*ParameterValue `json:"optimum"` // Parameter values matching the optimum point
 	Iterations      int               `json:"iterations"`
 	Evaluations     int               `json:"evaluations"`
 	FastEvaluations int               `json:"fast_evaluations"`
 }
 
+// Optimize is an entry point for the optimization routines.
+// One may want to pass logger within context to have detailed logs.
 func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	logger := logr.FromContextOrDiscard(ctx)
 
@@ -36,6 +41,7 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	estimator := newCostEstimator(settings)
 
 	endpoint := "0.0.0.0:8080"
+
 	srv := newServer(logger, endpoint, estimator)
 	defer srv.quit()
 
@@ -55,6 +61,7 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 		if srv.lastError != nil {
 			return nil, errors.Wrap(srv.lastError, "run rbfopt")
 		}
+
 		return nil, errors.Wrap(err, "run rbfopt")
 	}
 

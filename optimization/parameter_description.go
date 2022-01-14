@@ -6,8 +6,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ConfigModifier injects parameter value received from the optimizer into configuration instance
 type ConfigModifier func(int)
 
+// Bound describes reasonable bounds for parameter variation
 type Bound struct {
 	From int `json:"from"`
 	To   int `json:"to"`
@@ -15,9 +17,9 @@ type Bound struct {
 
 // ParameterDescription is something you want to optimization in your service configuration
 type ParameterDescription struct {
-	Name           string         `json:"name"`  // Brief name of your parameter
-	Bound          *Bound         `json:"bound"` // Some reasonable bounds for the parameters
+	Bound          *Bound         `json:"bound"`
 	ConfigModifier ConfigModifier `json:"-"`
+	Name           string         `json:"name"`
 }
 
 const namePattern = "[a-zA-Z0-9_]"
@@ -33,7 +35,7 @@ func (pd *ParameterDescription) validate() error {
 	}
 
 	if pd.ConfigModifier == nil {
-		return errors.New("ConfigModifier is empty")
+		return errors.New("parameter ConfigModifier is empty")
 	}
 
 	return nil
