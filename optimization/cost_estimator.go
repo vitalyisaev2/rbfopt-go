@@ -30,18 +30,29 @@ func (ce *costEstimator) estimateCost(ctx context.Context, request *estimateCost
 
 	// then run cost estimation
 	cost, err := ce.settings.CostFunction(ctx)
+
+	response := &estimateCostResponse{Cost: cost}
+
 	if err != nil {
 		// notify optimizer about the invalid combination of parameters
-		if errors.Is(err, ErrInvalidParameterCombination) {
-			return &estimateCostResponse{Cost: cost, InvalidParameterCombination: true}, nil
+		if !errors.Is(err, ErrInvalidParameterCombination) {
+			return nil, errors.Wrap(err, "cost function call")
 		}
 
-		return nil, errors.Wrap(err, "cost function call")
+		response.InvalidParameterCombination = true
+		response.Cost = ce.settings.InvalidParameterCombinationCost
 	}
 
-	response := &estimateCostResponse{Cost: cost, InvalidParameterCombination: false}
+	if cost >= ce.settings.InvalidParameterCombinationCost {
+		return nil, errors.Wrapf(
+			errTooHighInvalidParameterCombinationCost,
+			"cost=%v, invalid_parameter_combination_cost=%v",
+			cost, ce.settings.InvalidParameterCombinationCost,
+		)
+	}
 
-	logger.V(1).Info("estimate cost",
+	logger.V(1).Info(
+		"estimate cost",
 		"attempts", ce.attempts,
 		"request", request,
 		"response", response)

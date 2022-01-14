@@ -52,7 +52,10 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	// run Python optimizer
 	ctx = logr.NewContext(ctx, logger)
 	if err := runRbfOpt(ctx, settings, rootDir, endpoint); err != nil {
-		return nil, errors.Wrapf(err, "run python part")
+		if srv.lastError != nil {
+			return nil, errors.Wrap(srv.lastError, "run rbfopt")
+		}
+		return nil, errors.Wrap(err, "run rbfopt")
 	}
 
 	// obtain final report

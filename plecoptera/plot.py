@@ -1,4 +1,6 @@
+import functools
 import pathlib
+import typing
 from typing import Any, Callable
 
 import matplotlib.axes
@@ -11,21 +13,28 @@ import scipy.interpolate
 import scipy.stats
 from colorhash import ColorHash
 
+import plecoptera.names as names
 from plecoptera.report import Report
 
 
-class Renderer():
+class Renderer:
     __df: pd.DataFrame
     __root_dir: pathlib.Path
     __report: Report
 
     def __init__(self, df: pd.DataFrame, report: Report, root_dir: pathlib.Path):
-        self.__df = df[df["invalid_parameter_combination"] == False]
+        self.__df = df[df[names.InvalidParameterCombination] == False]
         self.__root_dir = root_dir
         self.__report = report
 
+    @property
+    @functools.cache
+    def __parameter_column_names(self) -> typing.List[str]:
+        utility_columns = (names.Cost, names.InvalidParameterCombination)
+        return list(filter(lambda x: x not in utility_columns, self.__df.columns))
+
     def correlations(self):
-        column_names = [column for column in self.__df.columns if column not in ('cost', 'invalid_parameter_combination')]
+        column_names = self.__parameter_column_names
 
         if len(column_names) <= 2:
             n_rows, n_columns = 1, len(column_names)
@@ -55,13 +64,13 @@ class Renderer():
         fig.savefig(figure_path)
 
     def __render_correlation(self, ax: matplotlib.axes.Axes, col_name: str):
-        df = pd.DataFrame({col_name: self.__df[col_name], "cost": self.__df['cost']})
+        df = pd.DataFrame({col_name: self.__df[col_name], names.Cost: self.__df[names.Cost]})
 
         # select the minimums
-        data = df.groupby(col_name)['cost'].agg(lambda arg: arg.min()).reset_index()
+        data = df.groupby(col_name)[names.Cost].agg(lambda arg: arg.min()).reset_index()
 
         color = ColorHash(col_name).hex
-        ax.plot(data[col_name], data["cost"], linewidth=0, marker='o', color=color)
+        ax.plot(data[col_name], data[names.Cost], linewidth=0, marker='o', color=color)
 
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
@@ -76,7 +85,7 @@ class Renderer():
         # ax.legend(fancybox=True, shadow=True)
 
     def pairwise_heatmap_matrix(self):
-        column_names = [column for column in self.__df.columns if column not in ('cost', 'invalid_parameter_combination')]
+        column_names = self.__parameter_column_names
 
         # approximate size that make image look well
         figsize = (4 * len(column_names), 4 * len(column_names))
@@ -104,15 +113,15 @@ class Renderer():
                                   ax: matplotlib.axes.Axes,
                                   col_name_1: str,
                                   col_name_2: str) -> matplotlib.image.AxesImage:
-        data = self.__df[[col_name_1, col_name_2, "cost"]]
+        data = self.__df[[col_name_1, col_name_2, names.Cost]]
 
         # select the minimums
-        data = data.groupby([col_name_1, col_name_2])['cost'].agg(lambda x: x.min()).reset_index()
+        data = data.groupby([col_name_1, col_name_2])[names.Cost].agg(lambda x: x.min()).reset_index()
 
         # compute grid bounds
         x_min, x_max = data[col_name_1].min(), data[col_name_1].max()
         y_min, y_max = data[col_name_2].min(), data[col_name_2].max()
-        cost_min, cost_max = self.__df["cost"].min(), self.__df["cost"].max()
+        cost_min, cost_max = self.__df[names.Cost].min(), self.__df[names.Cost].max()
         samples = 100
         x_step = (x_max - x_min) / samples
         y_step = (y_max - y_min) / samples
@@ -121,7 +130,7 @@ class Renderer():
         # interpolate data
         grid = scipy.interpolate.griddata(
             data[[col_name_1, col_name_2]],
-            data["cost"],
+            data[names.Cost],
             (grid_x, grid_y),
             method='cubic',
         )

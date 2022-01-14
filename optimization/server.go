@@ -12,6 +12,7 @@ import (
 type server struct {
 	httpServer *http.Server
 	estimator  *costEstimator
+	lastError  error
 	logger     logr.Logger
 }
 
@@ -98,6 +99,8 @@ func (s *server) middleware(w http.ResponseWriter, r *http.Request, handler hand
 	statusCode, err := handler(ctx, w, r)
 	w.WriteHeader(statusCode)
 	if err != nil {
+		// cache errors
+		s.lastError = err
 		logger.Error(err, "request handling finished")
 	} else {
 		logger.V(0).Info("request handling finished")

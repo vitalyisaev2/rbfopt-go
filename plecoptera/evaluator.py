@@ -6,10 +6,10 @@ import jsons
 import numpy as np
 import pandas as pd
 
-from plecoptera.aliases import Cost
+from plecoptera.types import Cost, ParameterValue
 from plecoptera.client import Client
-from plecoptera.parameters import ParameterValue
 from plecoptera.report import Report
+import plecoptera.names as names
 
 
 class Evaluator:
@@ -39,8 +39,8 @@ class Evaluator:
 
         # store evaluation result for the future use
         entry = {name: value for (name, value) in zip(self.__parameter_names, raw_values)}
-        entry["cost"] = cost
-        entry["invalid_parameter_combination"] = invalid_parameter_combination
+        entry[names.Cost] = cost
+        entry[names.InvalidParameterCombination] = invalid_parameter_combination
 
         self.__evaluations.append(entry)
 

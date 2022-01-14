@@ -18,15 +18,17 @@ type CostFunction func(ctx context.Context) (Cost, error)
 // CostFunction must return MaxCost and ErrInvalidParameterCombination if it happened.
 var ErrInvalidParameterCombination = errors.New("Invalid parameter combination")
 
-// MaxCost represents the highest possible value of a cost function
-const MaxCost Cost = math.MaxFloat64
+var errTooHighInvalidParameterCombinationCost = errors.New(
+	"Too high value of InvalidParameterCombinationCost: " +
+		"visit https://github.com/coin-or/rbfopt/issues/28#issuecomment-629720480 to pick a good one")
 
-// Settings contains optimization techniques
+// Settings parametrize optimization techniques
 type Settings struct {
-	Parameters     []*ParameterDescription
-	CostFunction   CostFunction
-	MaxEvaluations uint
-	MaxIterations  uint
+	Parameters                      []*ParameterDescription
+	CostFunction                    CostFunction
+	MaxEvaluations                  uint
+	MaxIterations                   uint
+	InvalidParameterCombinationCost Cost // Reason: https://github.com/coin-or/rbfopt/issues/28
 }
 
 func (s *Settings) validate() error {
@@ -50,6 +52,10 @@ func (s *Settings) validate() error {
 
 	if s.MaxIterations == 0 {
 		return errors.New("MaxIterations is empty")
+	}
+
+	if s.InvalidParameterCombinationCost == math.MaxFloat64 {
+		return errTooHighInvalidParameterCombinationCost
 	}
 
 	return nil

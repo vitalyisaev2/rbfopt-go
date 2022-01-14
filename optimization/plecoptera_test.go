@@ -63,9 +63,10 @@ func TestPlecoptera(t *testing.T) {
 					ConfigModifier: cfg.setParamZ,
 				},
 			},
-			CostFunction:   cfg.costFunction,
-			MaxEvaluations: 25,
-			MaxIterations:  25,
+			CostFunction:                    cfg.costFunction,
+			MaxEvaluations:                  25,
+			MaxIterations:                   25,
+			InvalidParameterCombinationCost: 10,
 		}
 
 		logger := newLogger()
@@ -120,13 +121,14 @@ func TestPlecoptera(t *testing.T) {
 			CostFunction: func(ctx context.Context) (optimization.Cost, error) {
 				// explicitly validate parameters, throw errors if they're invalid
 				if cfg.paramX < cfg.paramY {
-					return optimization.MaxCost, optimization.ErrInvalidParameterCombination
+					return 0, optimization.ErrInvalidParameterCombination
 				}
 
 				return cfg.costFunction(ctx)
 			},
-			MaxEvaluations: 25,
-			MaxIterations:  25,
+			MaxEvaluations:                  25,
+			MaxIterations:                   25,
+			InvalidParameterCombinationCost: 10,
 		}
 
 		logger := newLogger()

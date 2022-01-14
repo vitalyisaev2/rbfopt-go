@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+Cost = float
+
 
 @dataclass
 class ParameterValue:

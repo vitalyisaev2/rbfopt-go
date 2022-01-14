@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from plecoptera.aliases import Cost
-from plecoptera.parameters import ParameterValue
+from plecoptera.types import Cost, ParameterValue
 
 
 @dataclass

@@ -5,12 +5,12 @@ from urllib.parse import urljoin
 import jsons
 import requests
 
-from plecoptera.aliases import Cost
-from plecoptera.parameters import ParameterValue
+from plecoptera.types import Cost, ParameterValue
 from plecoptera.report import Report
+import plecoptera.names as names
 
 
-class Client():
+class Client:
     url_head: str
     session: requests.Session
 
@@ -27,12 +27,12 @@ class Client():
             json=jsons.dump(payload),
         )
 
-        print(f"response code={response.status_code} cost={response.json()}")
+        print(f"response code={response.status_code} body={response.json()}")
 
         if response.status_code != HTTPStatus.OK:
             raise ValueError(f'invalid status code {response.status_code}')
         else:
-            return response.json()["cost"], response.json()["invalid_parameter_combination"]
+            return response.json()[names.Cost], response.json()[names.InvalidParameterCombination]
 
     def register_report(self, report: Report):
         print(f"request '{report}'")
@@ -43,7 +43,7 @@ class Client():
             json=jsons.dump(payload),
         )
 
-        print(f"response code={response.status_code} cost={response}")
+        print(f"response code={response.status_code} response={response}")
 
         if response.status_code != HTTPStatus.OK:
             raise ValueError(f'invalid status code {response.status_code}')
