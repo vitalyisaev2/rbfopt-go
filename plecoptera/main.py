@@ -43,8 +43,8 @@ def main():
 
     # render plots
     renderer = Renderer(evaluations, report, root_dir)
+    renderer.scatterplots()
     renderer.pairwise_heatmap_matrix()
-    renderer.correlations()
 
 
 if __name__ == "__main__":

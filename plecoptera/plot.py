@@ -39,7 +39,11 @@ class Renderer:
         cost = self.__df[names.Cost]
         return [cost.min(), cost.max()]
 
-    def correlations(self):
+    def scatterplots(self):
+        self.__render_scatterplot_group(only_optimal_values=False)
+        self.__render_scatterplot_group(only_optimal_values=True)
+
+    def __render_scatterplot_group(self, only_optimal_values: bool):
         column_names = self.__parameter_column_names
 
         if len(column_names) <= 2:
@@ -60,24 +64,31 @@ class Renderer:
 
         for i in range(len(axes)):
             if i < len(column_names):
-                self.__render_correlation(axes[i], column_names[i])
+                self.__render_scatterplot(axes[i], column_names[i], only_optimal_values=only_optimal_values)
             else:
                 axes[i].axis('off')
 
         fig.tight_layout()
 
-        figure_path = self.__root_dir.joinpath("correlation.png")
+        suffix = "only_optimal_values" if only_optimal_values else "all_values"
+        figure_path = self.__root_dir.joinpath(f"scatterplot_{suffix}.png")
         fig.savefig(figure_path)
 
-    def __render_correlation(self, ax: matplotlib.axes.Axes, col_name: str):
+    def __render_scatterplot(self, ax: matplotlib.axes.Axes, col_name: str, only_optimal_values: bool):
         data = pd.DataFrame({col_name: self.__df[col_name], names.Cost: self.__df[names.Cost]})
+
+        if only_optimal_values:
+            # for every argument value, pick the best cost function value
+            data = data.groupby(col_name)[names.Cost].agg(lambda x: x.min()).reset_index()
 
         color = ColorHash(col_name).hex
         ax.plot(data[col_name], data[names.Cost], linewidth=0, marker='o', color=color)
 
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
-        ax.set_ybound(*self.__cost_bounds)
+        (cost_min, cost_max) = self.__cost_bounds
+        print(">>> COST", cost_min, cost_max)
+        ax.set_ybound(lower=cost_min, upper=cost_max)
 
         # draw point with optimum
         opt_arg = self.__report.optimum_argument(col_name)
@@ -125,7 +136,7 @@ class Renderer:
         # compute grid bounds
         x_min, x_max = data[col_name_1].min(), data[col_name_1].max()
         y_min, y_max = data[col_name_2].min(), data[col_name_2].max()
-        cost_min, cost_max = self.__df[names.Cost].min(), self.__df[names.Cost].max()
+        (cost_min, cost_max) = self.__cost_bounds
         samples = 100
         x_step = (x_max - x_min) / samples
         y_step = (y_max - y_min) / samples
@@ -140,7 +151,7 @@ class Renderer:
         )
 
         # render interpolated grid
-        im = ax.imshow(grid, cmap='jet', origin='lower', interpolation='quadric', vmin=cost_min, vmax=cost_max)
+        im = ax.imshow(grid.T, cmap='jet', origin='lower', interpolation='quadric', vmin=cost_min, vmax=cost_max)
 
         # scale ticks
         x_scale, y_scale = (x_max - x_min) / samples, (y_max - y_min) / samples
