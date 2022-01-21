@@ -24,7 +24,6 @@ class Report:
         raise ValueError(f"unexpected name {name}")
 
     def save_to_file(self, file_path: os.PathLike):
-        # file_path = self.__root_dir.joinpath("report.json")
         with open(file_path, "w") as f:
             obj = jsons.dump(self)
             json.dump(obj, f)

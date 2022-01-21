@@ -73,8 +73,6 @@ class Evaluator:
 
         # dump report for future usage
         file_path = self.__root_dir.joinpath("report.json")
-        with open(file_path, "w") as f:
-            obj = jsons.dump(self.__report)
-            json.dump(obj, f)
+        self.__report.save_to_file(file_path)
 
         return evaluations, self.__report

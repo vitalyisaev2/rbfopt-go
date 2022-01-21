@@ -87,7 +87,6 @@ class Renderer:
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
         (cost_min, cost_max) = self.__cost_bounds
-        print(">>> COST", cost_min, cost_max)
         ax.set_ybound(lower=cost_min, upper=cost_max)
 
         # draw point with optimum
