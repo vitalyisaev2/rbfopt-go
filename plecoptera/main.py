@@ -33,6 +33,7 @@ def main():
         max_evaluations=settings.max_evaluations,
         max_iterations=settings.max_iterations,
         rand_seed=int(time.mktime(datetime.now().timetuple())),
+        init_strategy="all_corners",
     )
     alg = rbfopt.RbfoptAlgorithm(settings, bb)
 

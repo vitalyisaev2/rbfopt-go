@@ -33,6 +33,12 @@ class Renderer:
         utility_columns = (names.Cost, names.InvalidParameterCombination)
         return list(filter(lambda x: x not in utility_columns, self.__df.columns))
 
+    @property
+    @functools.cache
+    def __cost_bounds(self) -> typing.List[str]:
+        cost = self.__df[names.Cost]
+        return [cost.min(), cost.max()]
+
     def correlations(self):
         column_names = self.__parameter_column_names
 
@@ -64,16 +70,14 @@ class Renderer:
         fig.savefig(figure_path)
 
     def __render_correlation(self, ax: matplotlib.axes.Axes, col_name: str):
-        df = pd.DataFrame({col_name: self.__df[col_name], names.Cost: self.__df[names.Cost]})
-
-        # select the minimums
-        data = df.groupby(col_name)[names.Cost].agg(lambda arg: arg.min()).reset_index()
+        data = pd.DataFrame({col_name: self.__df[col_name], names.Cost: self.__df[names.Cost]})
 
         color = ColorHash(col_name).hex
         ax.plot(data[col_name], data[names.Cost], linewidth=0, marker='o', color=color)
 
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
+        ax.set_ybound(*self.__cost_bounds)
 
         # draw point with optimum
         opt_arg = self.__report.optimum_argument(col_name)
