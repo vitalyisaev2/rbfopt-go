@@ -86,8 +86,6 @@ class Renderer:
 
         ax.set_xlabel(col_name, fontsize=14)
         ax.set_ylabel('Cost function', fontsize=14)
-        (cost_min, cost_max) = self.__cost_bounds
-        ax.set_ybound(lower=cost_min, upper=cost_max)
 
         # draw point with optimum
         opt_arg = self.__report.optimum_argument(col_name)
@@ -95,8 +93,11 @@ class Renderer:
         ax.scatter(opt_arg, opt_val, color='red', marker='o', s=100)
         ax.annotate("{:.2f}".format(opt_val), (opt_arg, opt_val))
 
-        # TODO: think about the optimum
-        # ax.legend(fancybox=True, shadow=True)
+        # set equal limits
+        (cost_min, cost_max) = self.__cost_bounds
+        # ax.set_ybound(lower=cost_min, upper=cost_max)
+        ax.set_ylim(bottom=cost_min, top=cost_max)
+        print(col_name, cost_min, cost_max)
 
     def pairwise_heatmap_matrix(self):
         column_names = self.__parameter_column_names
