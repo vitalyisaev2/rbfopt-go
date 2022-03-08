@@ -3,11 +3,11 @@ import pathlib
 
 HERE = pathlib.Path(__file__).parent
 
-setup(name='wrapper',
+setup(name='rbfopt-go',
       version_config={
           "dev_template": "{tag}",
       },
-      description='Find better configuration of your Go service with global optimization algorithms',
+      description='Find better configuration of your Go service with derivative-free optimization algorithms',
       author='Vitaly Isaev',
       author_email='vitalyisaev2@gmail.com',
       url='https://github.com/vitalyisaev2/rbfopt-go',
