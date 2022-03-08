@@ -1,4 +1,4 @@
-# rbfopt-go
+# RBFOpt-go
 
 Find better configuration of your Go service using modern derivative-free optimization algorithms.
 
@@ -58,9 +58,9 @@ or [full whitepaper](http://www.optimization-online.org/DB_FILE/2014/09/4538.pdf
 
 ## Architecture
 
-Rbfopt-go consists of two parts:
+RBFOpt-go consists of two parts:
 
-* Python script wrapping RBFopt.
+* Python script wrapping RBFOpt.
 * Go library hiding the details of external optimizer work from clients.
 
 Go library executes Python script as a subprocess and runs 
@@ -199,7 +199,7 @@ z: 10
 
 ### Analysis
 
-Aside from the discovered optimum value, Rbfopt-go provides you 
+Aside from the discovered optimum value, RBFOpt-go provides you 
 with several plots that may give you some inspiration 
 when exploring the cost function.
 You can find them in `/tmp/rbfopt_$timestamp` directory.
