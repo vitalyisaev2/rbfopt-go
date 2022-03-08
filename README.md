@@ -82,14 +82,13 @@ sudo dnf install -y coin-or-Bonmin python3-virtualenv
 # TODO: check
 ```
 
-### Rbfopt-go
+### rbfopt-go
 
 ```bash
 virtualenv venv
 source venv/bin/activate
-# TODO: release on pypi
-pip install git+https://github.com/vitalyisaev2/rbfopt-go.git   
-go get github.com/vitalyisaev2/wrapper
+pip install rbfopt-go
+go get github.com/vitalyisaev2/rbfopt-go
 ```
 
 ## Example 
