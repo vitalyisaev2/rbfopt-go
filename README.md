@@ -52,13 +52,13 @@ in the terms of the number of the cost functions evaluations.
 
 Modern optimization algorithms try to avoid the computation of the
 derivative and gradient of a cost function. 
-Plecoptera is based on one of these tools - [RBFOpt](https://github.com/coin-or/rbfopt).
+Rbfopt-go is based on one of these tools - [RBFOpt](https://github.com/coin-or/rbfopt).
 If you're interested, please read either RBFOpt [brief annotation](https://developer.ibm.com/open/projects/rbfopt/), 
 or [full whitepaper](http://www.optimization-online.org/DB_FILE/2014/09/4538.pdf).
 
 ## Architecture
 
-Plecoptera consists of two parts:
+Rbfopt-go consists of two parts:
 
 * Python script wrapping RBFopt.
 * Go library hiding the details of external optimizer work from clients.
@@ -82,7 +82,7 @@ sudo dnf install -y coin-or-Bonmin python3-virtualenv
 # TODO: check
 ```
 
-### Plecoptera
+### Rbfopt-go
 
 ```bash
 virtualenv venv
@@ -200,7 +200,7 @@ z: 10
 
 ### Analysis
 
-Aside from the discovered optimum value, Plecoptera provides you 
+Aside from the discovered optimum value, Rbfopt-go provides you 
 with several plots that may give you some inspiration 
 when exploring the cost function.
 You can find them in `/tmp/rbfopt_$timestamp` directory.
