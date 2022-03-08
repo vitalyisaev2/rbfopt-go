@@ -49,7 +49,7 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	// FIXME: take root dir from settings
 	rootDir := filepath.Join(
 		"/tmp",
-		fmt.Sprintf("plecoptera_%v", time.Now().Format("20060102_150405")),
+		fmt.Sprintf("rbfopt-go_%v", time.Now().Format("20060102_150405")),
 	)
 	if err := os.MkdirAll(rootDir, 0755); err != nil {
 		return nil, errors.Wrap(err, "mkdir all")

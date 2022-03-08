@@ -7,7 +7,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/stretchr/testify/require"
-	"github.com/vitalyisaev2/plecoptera/optimization"
+	"github.com/vitalyisaev2/rbfopt-go/optimization"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

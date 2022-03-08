@@ -1,4 +1,4 @@
-module github.com/vitalyisaev2/plecoptera
+module github.com/vitalyisaev2/rbfopt-go
 
 go 1.17
 

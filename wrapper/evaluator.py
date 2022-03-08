@@ -6,10 +6,10 @@ import jsons
 import numpy as np
 import pandas as pd
 
-from plecoptera.types import Cost, ParameterValue
-from plecoptera.client import Client
-from plecoptera.report import Report
-import plecoptera.names as names
+from wrapper.types import Cost, ParameterValue
+from wrapper.client import Client
+from wrapper.report import Report
+import wrapper.names as names
 
 
 class Evaluator:

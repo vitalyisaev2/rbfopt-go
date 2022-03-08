@@ -27,7 +27,7 @@ type rbfOptWrapper struct {
 	endpoint string
 }
 
-const rbfOptExecutable = "plecoptera"
+const rbfOptGoExecutable = "rbfopt-go-wrapper"
 
 func (r *rbfOptWrapper) run() error {
 	path := filepath.Join(r.rootDir, "settings.json")
@@ -37,7 +37,7 @@ func (r *rbfOptWrapper) run() error {
 	}
 
 	//nolint:gosec
-	cmd := exec.Command(rbfOptExecutable, r.rootDir)
+	cmd := exec.Command(rbfOptGoExecutable, r.rootDir)
 	if err := r.executeCommand(r.ctx, cmd); err != nil {
 		return errors.Wrap(err, "execute command")
 	}

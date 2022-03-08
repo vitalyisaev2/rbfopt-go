@@ -5,7 +5,7 @@ from typing import List
 
 import jsons
 
-from plecoptera.types import Cost, ParameterValue
+from wrapper.types import Cost, ParameterValue
 
 
 @dataclass

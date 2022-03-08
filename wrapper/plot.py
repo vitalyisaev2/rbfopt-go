@@ -13,8 +13,8 @@ import scipy.interpolate
 import scipy.stats
 from colorhash import ColorHash
 
-import plecoptera.names as names
-from plecoptera.report import Report
+import wrapper.names as names
+from wrapper.report import Report
 
 
 class Renderer:

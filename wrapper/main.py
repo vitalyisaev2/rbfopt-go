@@ -6,10 +6,10 @@ from datetime import datetime
 
 import rbfopt
 
-from plecoptera.client import Client
-from plecoptera.evaluator import Evaluator
-from plecoptera.plot import Renderer
-from plecoptera.settings import Settings
+from wrapper.client import Client
+from wrapper.evaluator import Evaluator
+from wrapper.plot import Renderer
+from wrapper.settings import Settings
 
 
 def main():

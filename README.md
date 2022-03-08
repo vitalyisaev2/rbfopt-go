@@ -1,4 +1,4 @@
-# plecoptera
+# rbfopt-go
 
 Find better configuration of your Go service using modern derivative-free optimization algorithms.
 
@@ -88,8 +88,8 @@ sudo dnf install -y coin-or-Bonmin python3-virtualenv
 virtualenv venv
 source venv/bin/activate
 # TODO: release on pypi
-pip install git+https://github.com/vitalyisaev2/plecoptera.git   
-go get github.com/vitalyisaev2/plecoptera
+pip install git+https://github.com/vitalyisaev2/rbfopt-go.git   
+go get github.com/vitalyisaev2/wrapper
 ```
 
 ## Example 
@@ -103,7 +103,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vitalyisaev2/plecoptera/optimization"
+	"github.com/vitalyisaev2/rbfopt-go/optimization"
 )
 
 // Define a configuration structure in any way you want.
@@ -203,7 +203,7 @@ z: 10
 Aside from the discovered optimum value, Plecoptera provides you 
 with several plots that may give you some inspiration 
 when exploring the cost function.
-You can find them in `/tmp/plecoptera_$timestamp` directory.
+You can find them in `/tmp/rbfopt_$timestamp` directory.
 
 Please note that on each of these plots not all data points are depicted,
 but only the minimum reached in this point.
@@ -217,7 +217,13 @@ A simple correlation between parameters and
 the cost function helps to estimate the contribution of each
 parameter to the final value of a cost function.
 
-![correlation](/docs/correlation.png)
+All discovered points:
+
+![correlation](/docs/scatterplot_all_values.png)
+
+Only optimal points:
+
+![correlation](/docs/scatterplot_only_optimal_values.png)
 
 #### Pairwise heatmaps
 

@@ -3,14 +3,14 @@ import pathlib
 
 HERE = pathlib.Path(__file__).parent
 
-setup(name='plecoptera',
+setup(name='wrapper',
       version_config={
           "dev_template": "{tag}",
       },
       description='Find better configuration of your Go service with global optimization algorithms',
       author='Vitaly Isaev',
       author_email='vitalyisaev2@gmail.com',
-      url='https://github.com/vitalyisaev2/plecoptera',
+      url='https://github.com/vitalyisaev2/rbfopt-go',
       packages=find_packages(),
       setup_requires=["setuptools-git-versioning"],
       install_requires=(
@@ -37,7 +37,7 @@ setup(name='plecoptera',
       ],
       entry_points={
           'console_scripts': [
-              'plecoptera = plecoptera.main:main',
+              'rbfopt-go-wrapper = wrapper.main:main',
           ]
       },
       zip_safe=False,
