@@ -15,6 +15,7 @@ from colorhash import ColorHash
 
 import wrapper.names as names
 from wrapper.report import Report
+from wrapper.settings import Settings
 
 
 class Renderer:
@@ -22,8 +23,13 @@ class Renderer:
     __root_dir: pathlib.Path
     __report: Report
 
-    def __init__(self, df: pd.DataFrame, report: Report, root_dir: pathlib.Path):
-        self.__df = df[df[names.InvalidParameterCombination] == False]
+    def __init__(self, ss: Settings, df: pd.DataFrame, report: Report, root_dir: pathlib.Path):
+        # filter values corresponding to ErrInvalidParameterCombination params (if necessary)
+        if ss.skip_invalid_parameter_combination_on_plots:
+            self.__df = df[df[names.InvalidParameterCombination] is False]
+        else:
+            self.__df = df
+
         self.__root_dir = root_dir
         self.__report = report
 

@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 
-
 @dataclass
 class Settings:
     dimensions: int
@@ -16,6 +15,7 @@ class Settings:
     endpoint: str
     max_iterations: int
     max_evaluations: int
+    skip_invalid_parameter_combination_on_plots: bool
 
     @classmethod
     def from_file(cls, root_dir: pathlib.Path) -> 'Settings':
@@ -51,4 +51,5 @@ class Settings:
             endpoint=ss['endpoint'],
             max_evaluations=ss['max_evaluations'],
             max_iterations=ss['max_iterations'],
+            skip_invalid_parameter_combination_on_plots=ss['skip_invalid_parameter_combination_on_plots']
         )

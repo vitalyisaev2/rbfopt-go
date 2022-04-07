@@ -25,11 +25,18 @@ var errTooHighInvalidParameterCombinationCost = errors.New(
 
 // Settings contains the description of what and how to optimize.
 type Settings struct {
-	CostFunction                    CostFunction            // CostFunction itself
-	Parameters                      []*ParameterDescription // Arguments of a CostFunctions
-	MaxEvaluations                  uint                    // RBFOpt: limits number of evaluations
-	MaxIterations                   uint                    // RBFOpt: limits number of iterations
-	InvalidParameterCombinationCost Cost                    // RBFOpt: reason: https://github.com/coin-or/rbfopt/issues/28
+	// CostFunction itself
+	CostFunction CostFunction
+	// Arguments of a CostFunctions
+	Parameters []*ParameterDescription
+	// RBFOpt: limits number of evaluations
+	MaxEvaluations uint
+	// RBFOpt: limits number of iterations
+	MaxIterations uint
+	// RBFOpt: reason: https://github.com/coin-or/rbfopt/issues/28
+	InvalidParameterCombinationCost Cost
+	// Set to true if you don't want to see large values corresponding to the ErrInvalidParametersCombination on your plots
+	SkipInvalidParameterCombinationOnPlots bool
 }
 
 func (s *Settings) validate() error {
