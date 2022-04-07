@@ -15,34 +15,34 @@ from wrapper.settings import Settings
 def main():
     # prepare infrastructure
     root_dir = pathlib.Path(sys.argv[1])
-    settings = Settings.from_file(root_dir)
+    wrapper_settings = Settings.from_file(root_dir)
 
-    client = Client(settings.endpoint)
-    evaluator = Evaluator(client, settings.var_names, root_dir)
+    client = Client(wrapper_settings.endpoint)
+    evaluator = Evaluator(client, wrapper_settings.var_names, root_dir)
 
     bb = rbfopt.RbfoptUserBlackBox(
-        settings.dimensions,
-        settings.var_lower,
-        settings.var_upper,
-        settings.var_types,
+        wrapper_settings.dimensions,
+        wrapper_settings.var_lower,
+        wrapper_settings.var_upper,
+        wrapper_settings.var_types,
         evaluator.estimate_cost,
     )
 
     # perform optimization
-    settings = rbfopt.RbfoptSettings(
-        max_evaluations=settings.max_evaluations,
-        max_iterations=settings.max_iterations,
+    rbfopt_settings = rbfopt.RbfoptSettings(
+        max_evaluations=wrapper_settings.max_evaluations,
+        max_iterations=wrapper_settings.max_iterations,
         rand_seed=int(time.mktime(datetime.now().timetuple())),
         init_strategy="all_corners",
     )
-    alg = rbfopt.RbfoptAlgorithm(settings, bb)
+    alg = rbfopt.RbfoptAlgorithm(rbfopt_settings, bb)
 
     # post report to server
     evaluator.register_report(*alg.optimize())
     evaluations, report = evaluator.dump()
 
     # render plots
-    renderer = Renderer(evaluations, report, root_dir)
+    renderer = Renderer(wrapper_settings, evaluations, report, root_dir)
     renderer.scatterplots()
     renderer.pairwise_heatmap_matrix()
 

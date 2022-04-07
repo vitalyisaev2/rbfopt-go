@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ParameterValue describes some value of a CostFunction argument
+// ParameterValue describes some value of a CostFunction argument.
 type ParameterValue struct {
 	Name  string
 	Value int

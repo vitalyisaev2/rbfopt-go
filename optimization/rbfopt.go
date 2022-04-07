@@ -14,10 +14,11 @@ import (
 )
 
 type rbfOptSettings struct {
-	Endpoint       string                  `json:"endpoint"`
-	Parameters     []*ParameterDescription `json:"parameters"`
-	MaxEvaluations uint                    `json:"max_evaluations"`
-	MaxIterations  uint                    `json:"max_iterations"`
+	Endpoint                               string                  `json:"endpoint"`
+	Parameters                             []*ParameterDescription `json:"parameters"`
+	MaxEvaluations                         uint                    `json:"max_evaluations"`
+	MaxIterations                          uint                    `json:"max_iterations"`
+	SkipInvalidParameterCombinationOnPlots bool                    `json:"skip_invalid_parameter_combination_on_plots"`
 }
 
 type rbfOptWrapper struct {
@@ -47,10 +48,11 @@ func (r *rbfOptWrapper) run() error {
 
 func (r *rbfOptWrapper) dumpConfig(path string) error {
 	cfg := &rbfOptSettings{
-		Endpoint:       r.endpoint,
-		Parameters:     r.settings.Parameters,
-		MaxEvaluations: r.settings.MaxEvaluations,
-		MaxIterations:  r.settings.MaxIterations,
+		Endpoint:                               r.endpoint,
+		Parameters:                             r.settings.Parameters,
+		MaxEvaluations:                         r.settings.MaxEvaluations,
+		MaxIterations:                          r.settings.MaxIterations,
+		SkipInvalidParameterCombinationOnPlots: r.settings.SkipInvalidParameterCombinationOnPlots,
 	}
 
 	data, err := json.Marshal(cfg)
