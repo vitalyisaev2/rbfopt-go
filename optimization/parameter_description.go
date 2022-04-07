@@ -6,16 +6,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ConfigModifier injects parameter value received from the optimizer into configuration instance
+// ConfigModifier injects parameter value received from the optimizer into configuration instance.
 type ConfigModifier func(int)
 
-// Bound describes reasonable bounds for parameter variation
+// Bound describes reasonable bounds for parameter variation.
 type Bound struct {
 	From int `json:"from"`
 	To   int `json:"to"`
 }
 
-// ParameterDescription is something you want to optimization in your service configuration
+// ParameterDescription is something you want to optimization in your service configuration.
 type ParameterDescription struct {
 	Bound          *Bound         `json:"bound"`
 	ConfigModifier ConfigModifier `json:"-"`

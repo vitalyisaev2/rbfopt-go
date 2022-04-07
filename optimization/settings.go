@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Cost represents the value returned by cost function
+// Cost represents the value returned by cost function.
 type Cost = float64
 
 // CostFunction (or objective function) is implemented by clients.
