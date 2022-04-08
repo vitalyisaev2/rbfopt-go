@@ -4,8 +4,13 @@ import pathlib
 HERE = pathlib.Path(__file__).parent
 
 setup(name='rbfopt-go',
-      version_config={
-          "dev_template": "{tag}",
+      # version_config={
+      #     "dev_template": "{tag}",
+      # },
+      setuptools_git_versioning={
+          "enabled": True,
+          "template": "{tag}",
+          "dirty_template": "{tag}",
       },
       description='Find better configuration of your Go service with derivative-free optimization algorithms',
       author='Vitaly Isaev',
