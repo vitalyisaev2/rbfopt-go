@@ -24,6 +24,7 @@ var errTooHighInvalidParameterCombinationCost = errors.New(
 	"too high value of InvalidParameterCombinationCost: " +
 		"visit https://github.com/coin-or/rbfopt/issues/28#issuecomment-629720480 to pick a good one")
 
+// InitStrategy determines the way RBFOpt selects points
 type InitStrategy int8
 
 const (
@@ -34,6 +35,7 @@ const (
 	RandCorners
 )
 
+// MarshalJSON renders InitStrategy to JSON
 func (s InitStrategy) MarshalJSON() ([]byte, error) {
 	switch s {
 	case LHDMaximin:
@@ -47,7 +49,7 @@ func (s InitStrategy) MarshalJSON() ([]byte, error) {
 	case RandCorners:
 		return []byte("\"rand_corners\""), nil
 	default:
-		return nil, errors.New(fmt.Sprintf("unknown InitStarategy: %v", s))
+		return nil, fmt.Errorf("unknown InitStarategy: %v", s)
 	}
 }
 
