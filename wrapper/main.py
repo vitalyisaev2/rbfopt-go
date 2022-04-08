@@ -16,6 +16,7 @@ def main():
     # prepare infrastructure
     root_dir = pathlib.Path(sys.argv[1])
     wrapper_settings = Settings.from_file(root_dir)
+    print(f"wrapper_settings: {wrapper_settings}")
 
     client = Client(wrapper_settings.endpoint)
     evaluator = Evaluator(client, wrapper_settings.var_names, root_dir)
@@ -33,7 +34,7 @@ def main():
         max_evaluations=wrapper_settings.max_evaluations,
         max_iterations=wrapper_settings.max_iterations,
         rand_seed=int(time.mktime(datetime.now().timetuple())),
-        init_strategy="all_corners",
+        init_strategy=wrapper_settings.init_strategy,
     )
     alg = rbfopt.RbfoptAlgorithm(rbfopt_settings, bb)
 

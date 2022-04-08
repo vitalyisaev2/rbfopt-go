@@ -2,6 +2,7 @@ package optimization
 
 import (
 	"context"
+	"fmt"
 	"math"
 
 	"github.com/pkg/errors"
@@ -23,6 +24,33 @@ var errTooHighInvalidParameterCombinationCost = errors.New(
 	"too high value of InvalidParameterCombinationCost: " +
 		"visit https://github.com/coin-or/rbfopt/issues/28#issuecomment-629720480 to pick a good one")
 
+type InitStrategy int8
+
+const (
+	LHDMaximin InitStrategy = iota
+	LHDCorr
+	AllCorners
+	LowerCorners
+	RandCorners
+)
+
+func (s InitStrategy) MarshalJSON() ([]byte, error) {
+	switch s {
+	case LHDMaximin:
+		return []byte("\"lhd_maximin\""), nil
+	case LHDCorr:
+		return []byte("\"lhd_corr\""), nil
+	case AllCorners:
+		return []byte("\"all_corners\""), nil
+	case LowerCorners:
+		return []byte("\"lower_corners\""), nil
+	case RandCorners:
+		return []byte("\"rand_corners\""), nil
+	default:
+		return nil, errors.New(fmt.Sprintf("unknown InitStarategy: %v", s))
+	}
+}
+
 // Settings contains the description of what and how to optimize.
 type Settings struct {
 	// CostFunction itself
@@ -37,6 +65,8 @@ type Settings struct {
 	InvalidParameterCombinationCost Cost
 	// Set to true if you don't want to see large values corresponding to the ErrInvalidParametersCombination on your plots
 	SkipInvalidParameterCombinationOnPlots bool
+	// Strategy to select initial points.
+	InitStrategy InitStrategy
 }
 
 func (s *Settings) validate() error {

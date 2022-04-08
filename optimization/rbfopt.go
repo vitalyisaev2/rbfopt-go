@@ -19,6 +19,7 @@ type rbfOptSettings struct {
 	MaxEvaluations                         uint                    `json:"max_evaluations"`
 	MaxIterations                          uint                    `json:"max_iterations"`
 	SkipInvalidParameterCombinationOnPlots bool                    `json:"skip_invalid_parameter_combination_on_plots"`
+	InitStrategy                           InitStrategy            `json:"init_strategy"`
 }
 
 type rbfOptWrapper struct {
