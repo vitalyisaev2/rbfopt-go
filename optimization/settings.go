@@ -24,7 +24,7 @@ var errTooHighInvalidParameterCombinationCost = errors.New(
 	"too high value of InvalidParameterCombinationCost: " +
 		"visit https://github.com/coin-or/rbfopt/issues/28#issuecomment-629720480 to pick a good one")
 
-// InitStrategy determines the way RBFOpt selects points
+// InitStrategy determines the way RBFOpt selects points.
 type InitStrategy int8
 
 const (
@@ -35,7 +35,7 @@ const (
 	RandCorners
 )
 
-// MarshalJSON renders InitStrategy to JSON
+// MarshalJSON renders InitStrategy to JSON.
 func (s InitStrategy) MarshalJSON() ([]byte, error) {
 	switch s {
 	case LHDMaximin:
@@ -55,6 +55,9 @@ func (s InitStrategy) MarshalJSON() ([]byte, error) {
 
 // Settings contains the description of what and how to optimize.
 type Settings struct {
+	// RootDir - place to store reports and other things
+	// (optimizer will create it if it doesn't exist).
+	RootDir string
 	// CostFunction itself
 	CostFunction CostFunction
 	// Arguments of a CostFunctions
@@ -72,12 +75,16 @@ type Settings struct {
 }
 
 func (s *Settings) validate() error {
+	if len(s.RootDir) == 0 {
+		return errors.New("field RootDir is empty")
+	}
+
 	if len(s.Parameters) == 0 {
-		return errors.New("parameter Parameters are empty")
+		return errors.New("field Parameters is empty")
 	}
 
 	if s.CostFunction == nil {
-		return errors.New("parameter CostFunction is empty")
+		return errors.New("field CostFunction is empty")
 	}
 
 	for _, param := range s.Parameters {
@@ -87,11 +94,11 @@ func (s *Settings) validate() error {
 	}
 
 	if s.MaxEvaluations == 0 {
-		return errors.New("parameter MaxEvaluations is empty")
+		return errors.New("field MaxEvaluations is empty")
 	}
 
 	if s.MaxIterations == 0 {
-		return errors.New("parameter MaxIterations is empty")
+		return errors.New("field MaxIterations is empty")
 	}
 
 	if s.InvalidParameterCombinationCost == math.MaxFloat64 {

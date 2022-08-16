@@ -25,21 +25,20 @@ type rbfOptSettings struct {
 type rbfOptWrapper struct {
 	ctx      context.Context
 	settings *Settings
-	rootDir  string
 	endpoint string
 }
 
 const rbfOptGoExecutable = "rbfopt-go-wrapper"
 
 func (r *rbfOptWrapper) run() error {
-	path := filepath.Join(r.rootDir, "settings.json")
+	path := filepath.Join(r.settings.RootDir, "settings.json")
 
 	if err := r.dumpConfig(path); err != nil {
 		return errors.Wrap(err, "dump config")
 	}
 
 	//nolint:gosec
-	cmd := exec.Command(rbfOptGoExecutable, r.rootDir)
+	cmd := exec.Command(rbfOptGoExecutable, r.settings.RootDir)
 	if err := r.executeCommand(r.ctx, cmd); err != nil {
 		return errors.Wrap(err, "execute command")
 	}
@@ -113,11 +112,10 @@ func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error
 	return nil
 }
 
-func runRbfOpt(ctx context.Context, settings *Settings, rootDir, endpoint string) error {
+func runRbfOpt(ctx context.Context, settings *Settings, endpoint string) error {
 	wrapper := &rbfOptWrapper{
 		ctx:      ctx,
 		settings: settings,
-		rootDir:  rootDir,
 		endpoint: endpoint,
 	}
 

@@ -14,3 +14,6 @@ python_release_test:
 
 python_release_prod:
 	twine upload dist/*
+
+deps_fedora:
+	sudo dnf install -y coin-or-Bonmin

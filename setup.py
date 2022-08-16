@@ -20,7 +20,7 @@ setup(name='rbfopt-go',
       setup_requires=["setuptools-git-versioning"],
       install_requires=(
           "jsons==1.6.0",
-          "numpy==1.21.4",
+          "numpy>=1.22",
           "Pyomo==6.1.2",
           "rbfopt==4.2.2",
           "requests==2.26.0",

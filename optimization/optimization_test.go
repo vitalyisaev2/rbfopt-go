@@ -2,6 +2,7 @@ package optimization_test
 
 import (
 	"context"
+	"io/ioutil"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -46,8 +47,12 @@ func TestRbfoptGo(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
+		rootDir, err := ioutil.TempDir("", "rbfopt-go")
+		require.NoError(t, err)
+
 		// set bounds to parameters
 		settings := &optimization.Settings{
+			RootDir: rootDir,
 			Parameters: []*optimization.ParameterDescription{
 				{
 					Name:           "x",
@@ -101,7 +106,11 @@ func TestRbfoptGo(t *testing.T) {
 	t.Run("invalid parameters combination", func(t *testing.T) {
 		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
+		rootDir, err := ioutil.TempDir("", "rbfopt-go")
+		require.NoError(t, err)
+
 		settings := &optimization.Settings{
+			RootDir: rootDir,
 			Parameters: []*optimization.ParameterDescription{
 				{
 					Name:           "x",

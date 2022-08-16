@@ -2,10 +2,7 @@ package optimization
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"path/filepath"
-	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
@@ -45,19 +42,20 @@ func Optimize(ctx context.Context, settings *Settings) (*Report, error) {
 	srv := newServer(logger, endpoint, estimator)
 	defer srv.quit()
 
-	// create temporary dir for configs and artifacts
-	// FIXME: take root dir from settings
-	rootDir := filepath.Join(
-		"/tmp",
-		fmt.Sprintf("rbfopt-go_%v", time.Now().Format("20060102_150405")),
-	)
-	if err := os.MkdirAll(rootDir, 0755); err != nil {
-		return nil, errors.Wrap(err, "mkdir all")
+	// create root directory for configs and artifacts if necessary
+	if _, err := os.Stat(settings.RootDir); err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(settings.RootDir, 0755); err != nil {
+				return nil, errors.Wrap(err, "make directory")
+			}
+		} else {
+			return nil, errors.Wrap(err, "stat directory")
+		}
 	}
 
 	// run Python optimizer
 	ctx = logr.NewContext(ctx, logger)
-	if err := runRbfOpt(ctx, settings, rootDir, endpoint); err != nil {
+	if err := runRbfOpt(ctx, settings, endpoint); err != nil {
 		if srv.lastError != nil {
 			return nil, errors.Wrap(srv.lastError, "run rbfopt")
 		}
