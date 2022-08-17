@@ -2,8 +2,9 @@ package optimization_test
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
@@ -47,12 +48,9 @@ func TestRbfoptGo(t *testing.T) {
 	t.Run("positive", func(t *testing.T) {
 		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
-		rootDir, err := ioutil.TempDir("", "rbfopt-go")
-		require.NoError(t, err)
-
 		// set bounds to parameters
 		settings := &optimization.Settings{
-			RootDir: rootDir,
+			RootDir: makeRootDirPath(),
 			Parameters: []*optimization.ParameterDescription{
 				{
 					Name:           "x",
@@ -106,11 +104,8 @@ func TestRbfoptGo(t *testing.T) {
 	t.Run("invalid parameters combination", func(t *testing.T) {
 		cfg := &serviceConfig{paramX: 0, paramY: 0, paramZ: 0}
 
-		rootDir, err := ioutil.TempDir("", "rbfopt-go")
-		require.NoError(t, err)
-
 		settings := &optimization.Settings{
-			RootDir: rootDir,
+			RootDir: makeRootDirPath(),
 			Parameters: []*optimization.ParameterDescription{
 				{
 					Name:           "x",
@@ -137,9 +132,10 @@ func TestRbfoptGo(t *testing.T) {
 
 				return cfg.costFunction(ctx)
 			},
-			MaxEvaluations:                  25,
-			MaxIterations:                   25,
-			InvalidParameterCombinationCost: 10,
+			MaxEvaluations:                         25,
+			MaxIterations:                          25,
+			InvalidParameterCombinationCost:        10,
+			SkipInvalidParameterCombinationOnPlots: true,
 		}
 
 		logger := newLogger()
@@ -166,4 +162,8 @@ func TestRbfoptGo(t *testing.T) {
 			require.Equal(t, report.Optimum[i].Value, settings.Parameters[i].Bound.To)
 		}
 	})
+}
+
+func makeRootDirPath() string {
+	return fmt.Sprintf("/tmp/rbfopt_%s", time.Now().Format("20060102_150405"))
 }

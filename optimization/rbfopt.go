@@ -1,11 +1,12 @@
 package optimization
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -88,20 +89,20 @@ func (r *rbfOptWrapper) executeCommand(ctx context.Context, cmd *exec.Cmd) error
 	// print
 
 	if stdoutBuf.Len() > 0 {
-		logger.V(1).Info("subprocess stdout")
+		logger.V(0).Info("subprocess stdout")
 
-		scanner := bufio.NewScanner(stdoutBuf)
-		for scanner.Scan() {
-			logger.V(1).Info(scanner.Text())
+		_, err := io.Copy(os.Stdout, stdoutBuf)
+		if err != nil {
+			return errors.Wrap(err, "copy")
 		}
 	}
 
 	if stderrBuf.Len() > 0 {
-		logger.V(1).Info("subprocess stderr")
+		logger.Info("subprocess stderr")
 
-		scanner := bufio.NewScanner(stderrBuf)
-		for scanner.Scan() {
-			logger.V(1).Info(scanner.Text())
+		_, err := io.Copy(os.Stdout, stderrBuf)
+		if err != nil {
+			return errors.Wrap(err, "copy")
 		}
 	}
 
